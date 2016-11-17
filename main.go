@@ -9,8 +9,6 @@ type Config struct {
 
     Baseurl     string
     Pagetitle   string
-    RootDir     string
-
 }
 
 
