@@ -1,0 +1,26 @@
+
+.jumbotron {
+    margin-bottom: 0;
+    margin-top: 0;
+    background-color: purple;
+}
+
+.jumbotron h1 {
+	color: white;
+}
+
+.jumbotron p {
+	color: lightslategray;
+}
+
+
+.spinner {
+  display: inline-block;
+  opacity: 0;
+  width: 0;
+
+  -webkit-transition: opacity 0.25s, width 0.25s;
+  -moz-transition: opacity 0.25s, width 0.25s;
+  -o-transition: opacity 0.25s, width 0.25s;
+  transition: opacity 0.25s, width 0.25s;
+}
