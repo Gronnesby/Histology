@@ -2,14 +2,15 @@
 
 {% extends "layout.html" %}
 {% block content %}
-    <div class="jumbotron">
+    <!-- <div class="jumbotron">
         <div class="container">
             <h1>Histology Learning Platform</h1>
-            <p>
-                Something something
-            </p>
-
         </div>
-    </div>
+    </div> -->
+
+    <div id="map" style="height: 100%;"></div>
+
+
+    <script src="{{ url_for('static', filename='js/map.js')}}"></script>
 
 {% endblock %}
