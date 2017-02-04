@@ -25,3 +25,4 @@ _testmain.go
 
 static/images/tiles/*
 .DS_Store
+*/.DS_Store
