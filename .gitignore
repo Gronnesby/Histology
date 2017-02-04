@@ -24,3 +24,4 @@ _testmain.go
 *.prof
 
 static/images/tiles/*
+.DS_Store

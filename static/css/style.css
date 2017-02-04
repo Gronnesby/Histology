@@ -24,3 +24,35 @@
   -o-transition: opacity 0.25s, width 0.25s;
   transition: opacity 0.25s, width 0.25s;
 }
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.map {
+  width: 100vw;
+  height: 100vh;
+}
+
+.map.mode-create {
+    cursor: crosshair;
+}
+
+.leaflet-edge {
+    background-color: #0000ff;
+    box-shadow: 0 0 0 2px white, 0 0 10px rgba(0, 0, 0, .35);
+    border-radius: 20%;
+    cursor: move;
+    outline: none;
+    transition: background-color .25s;
+    opacity: 0;
+}
+
+.leaflet-polygon {
+    fill: #6600ff;
+    stroke: #000000;
+    stroke-width: 1;
+    fill-opacity: .45;
+}
