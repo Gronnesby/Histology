@@ -57,8 +57,8 @@ html { height: 100%;}
 }
 
 .leaflet-polygon {
-    fill: #6600ff;
+    fill: #00ffff;
     stroke: #000000;
     stroke-width: 1;
-    fill-opacity: .45;
+    fill-opacity: .15;
 }
