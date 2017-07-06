@@ -22,8 +22,10 @@ _testmain.go
 *.exe
 *.test
 *.prof
+*.pyc
 
 static/images/tiles/*
 static/images/*
 .DS_Store
 */.DS_Store
+.vscode/

@@ -1,0 +1,25 @@
+
+{% extends "layout.html" %}
+{% block content %}
+
+    <div id="map" class="map" style="width: 100%; min-width:100%;"></div>
+    <script type="text/javascript">
+        var viewer = OpenSeadragon({
+            id: "map",
+            prefixUrl: "static/images/",
+            tileSources: {
+                minLevel: 8,
+                height: {{ imgheight }},
+                width: {{ imgwidth }},
+                tileSize: 256,
+                getTileUrl: function( level, x, y )
+                {
+                    return "/tile?slug=" + "{{ slug }}" + "&level=" + level + "&x=" + x + "&y=" + y;
+                    
+                }
+            }
+        })
+    </script>
+    <!--<script src="{{ url_for('static', filename='js/map.js')}}"></script>-->
+
+{% endblock %}

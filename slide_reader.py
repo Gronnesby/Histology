@@ -16,10 +16,11 @@ class SlideImage(object):
             print 'Unknown Openslide error'
             raise
 
-        self.zoom = DeepZoomGenerator(self.osr, tile_size=254, limit_bounds=True)
+        self.zoom = DeepZoomGenerator(self.osr, tile_size=256, limit_bounds=True)
+        print 'Filename: {0}'.format(self.filename)
         print 'Tiles in image: {0}'.format(self.zoom.tile_count)
         print 'Tile levels: {0}'.format(self.zoom.level_count)
-        print 'Tile dimensions: {0}'.format(self.zoom.level_dimensions)
+        print 'Image dimensions: {0}'.format(self.osr.dimensions)
 
     def get_image_size(self):
 

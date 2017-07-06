@@ -1,9 +1,17 @@
 
 
+
 {% extends "layout.html" %}
 {% block content %}
-
-    <div id="map" class="map" style="height: 100%;"></div>
-    <script src="{{ url_for('static', filename='js/map.js')}}"></script>
-
+    {% for img in images %}
+    <div class="card col-md-4" style="width: 200px; margin-left: 30px;">
+        <a href="/image?slug={{ img }}">
+        <img class="card-img-top" src="/map?slug={{ img }}" alt="Card image cap" style="width: 200px; height: 200px;">
+        </a>
+        <div class="card-block">
+            <h4 class="card-title">{{ img }}</h4>
+            <p class="card-text">Text here</p>
+        </div>
+    </div>
+    {% endfor %}
 {% endblock %}

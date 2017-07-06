@@ -1,5 +1,5 @@
 
-var map = L.map('map', {minZoom: 0, zoomControl: false, zoomSnap: 0, setMaxZoom: 7});
+var map = L.map('map', {minZoom: 1, zoomControl: false, zoomSnap: 0, setMaxZoom: 7});
 var tilelayer;
 
 var freedraw = new FreeDraw({
@@ -60,16 +60,16 @@ function load_image(responseText)
 
     L.tileLayer('static/images/' + resp.name + '/{z}/{x}/{y}', { 
         noWrap: true,
-        minZoom: 11,
+        minZoom: 12,
         maxZoom: resp.maxZoom
     }).addTo(map);
+    map.invalidateSize();
     
-    var southWest = map.unproject([0, dim[1]], map.getMaxZoom()),
-        northEast = map.unproject([dim[0], 0], map.getMaxZoom()),
+    var southWest = map.unproject([1, dim[1]], map.getMaxZoom()),
+        northEast = map.unproject([dim[0], 1], map.getMaxZoom()),
         bounds = new L.LatLngBounds(southWest, northEast);
     // Restrict to bounds
-    //map.setMaxBounds(bounds);
-    // Fit bounds
+    map.setMaxBounds(bounds);
     map.fitBounds(bounds);
 }
 
