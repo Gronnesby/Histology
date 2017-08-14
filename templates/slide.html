@@ -7,6 +7,8 @@
         var viewer = OpenSeadragon({
             id: "map",
             prefixUrl: "static/images/",
+            showNavigationControl: false,
+            showNavigator: true,
             tileSources: {
                 minLevel: 8,
                 height: {{ imgheight }},

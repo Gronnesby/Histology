@@ -6,7 +6,7 @@
     {% for img in images %}
     <div class="card col-md-4" style="width: 200px; margin-left: 30px;">
         <a href="/image?slug={{ img }}">
-        <img class="card-img-top" src="/map?slug={{ img }}" alt="Card image cap" style="width: 200px; height: 200px;">
+        <img class="card-img-top" src="/map?slug={{ img }}&thumbnail=True" alt="Card image cap" style="width: 200px; height: 200px;">
         </a>
         <div class="card-block">
             <h4 class="card-title">{{ img }}</h4>

@@ -4,8 +4,10 @@ import os
 from flask import Flask, render_template, url_for, abort, make_response, request
 from slide_reader import SlideImage
 from io import BytesIO
+from PIL import Image
 
 APP = Flask(__name__)
+THUMBNAIL_SIZE = 500, 500
 
 class PILBytesIO(BytesIO):
     def fileno(self):
@@ -31,6 +33,15 @@ def load_images():
                 slug = os.path.splitext(slug)[0]
                 APP.slugs[slug] = filename
 
+def create_thumbnail(imagefile):
+
+    try:
+        im = Image.open(os.path.join(APP.config['pathology_images_path'], imagefile))
+        im.thumbnail(THUMBNAIL_SIZE)
+        outfile = imagefile.replace("_map2.jpg", "_thumbnail.jpg")
+        im.save(os.path.join(APP.config['pathology_images_path'], outfile), "JPEG")
+    except IOError:
+        print "cannot create thumbnail for", imagefile
 
 @APP.context_processor
 def images():
@@ -60,14 +71,14 @@ def map():
     try:
         filename = APP.slugs[slug]
 
-        mapfile = os.path.splitext(filename)[0]
-        mapfile = mapfile + "_map2.jpg"
+        imgfile = os.path.splitext(filename)[0]
+        thumbnail = imgfile + "_thumbnail.jpg"
 
     except KeyError:
         raise
 
     try:
-        with open((os.path.join(APP.config['pathology_images_path'], mapfile)), 'rb') as fp:
+        with open((os.path.join(APP.config['pathology_images_path'], thumbnail)), 'rb') as fp:
             resp = make_response(fp.read())
             resp.mimetype = 'image/%s' % 'jpg'
     except IOError:
