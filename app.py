@@ -52,11 +52,12 @@ def images():
 def image():
 
     slug = request.args.get('slug')
+    
     try:
         filename = APP.slugs[slug]
         img = APP.list_of_files[filename]
     except KeyError:
-        raise
+        render_template("404.html")
 
     height = img.osr.dimensions[1]
     width = img.osr.dimensions[0]
@@ -112,6 +113,8 @@ def tile():
 def case():
 
     slug = str(request.args.get('slug'))
+
+    return render_template("case.html", slug=slug)
 
 if __name__ == "__main__":
 

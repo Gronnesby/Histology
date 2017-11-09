@@ -2,13 +2,16 @@
 {% extends "layout.html" %}
 {% block content %}
 
-    <div id="map" class="map" style="width: 100%; min-width:100%;"></div>
+    <div id="image-ruler" class="highlight"> </div>
+    <div id="map" class="map" style="width: 100%; min-width:100%;" oncontextmenu="return false"></div>
+    
     <script type="text/javascript">
-        var viewer = OpenSeadragon({
+        const viewer = OpenSeadragon({
             id: "map",
             prefixUrl: "static/images/",
-            showNavigationControl: false,
+            showNavigationControl: true,
             showNavigator: true,
+            maxZoomPixelRatio: Infinity,
             tileSources: {
                 minLevel: 8,
                 height: {{ imgheight }},
@@ -18,10 +21,22 @@
                 {
                     return "/tile?slug=" + "{{ slug }}" + "&level=" + level + "&x=" + x + "&y=" + y;
                     
-                }
+                },
             }
         })
+
+        viewer.initializeAnnotations();
+        var tracker = new OpenSeadragon.MouseTracker({
+            
+            element: "map",
+
+            nonPrimaryPressHandler: function(event) {
+                coords = viewer.tiledImage.imageToViewportCoordinates(event.position);
+                viewer.viewport.panTo(coords);
+                alert(viewer.viewport.getCenter(true) + "\n" + coords);
+            }
+        });
+        tracker.setTracking(true);
     </script>
-    <!--<script src="{{ url_for('static', filename='js/map.js')}}"></script>-->
 
 {% endblock %}

@@ -6,7 +6,7 @@ body, html, .container-fluid, .sidebar, .body {
 }
 .body {
     box-sizing: border-box;
-    padding-top:65px;
+    padding-top:0px;
     width: 100%;
     z-index:1;
 }
@@ -382,3 +382,31 @@ html { height: 100%;}
     z-index: 1;
 }
 
+.navigator .highlight{
+    opacity:    0.4;
+    filter:     alpha(opacity=10);
+    outline:    2px solid #900;
+    background-color: #900;
+}
+.highlight{
+    opacity:    0.4;
+    filter:     alpha(opacity=10);
+    outline:    6px auto #0A7EbE;
+    background-color: white;
+}
+.highlight:hover, .highlight:focus{
+    filter:     alpha(opacity=10);
+    opacity:    0.7;
+    background-color: transparent;
+}
+
+.navbar-brand
+{
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-brand img
+{
+    max-height: 100%;
+}
