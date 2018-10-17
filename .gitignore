@@ -26,6 +26,7 @@ _testmain.go
 
 static/images/tiles/*
 static/images/*
+project-description/*
 .DS_Store
 */.DS_Store
 .vscode/

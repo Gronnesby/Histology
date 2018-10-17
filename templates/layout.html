@@ -22,7 +22,9 @@
     <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/openseadragon.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/openseadragon-annotations.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/openseadragonselection.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/paper-full.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/osd_viewer.js') }}"></script>
     
     <script>
         $(document).ready(function () {
@@ -49,14 +51,6 @@
                     <ul class="dropdown-menu">
                         {% for img in images %}
                             <li><a href="/image?slug={{ img }}">{{ img }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Caser<span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        {% for img in images %}
-                            <li><a href="/case?slug={{ img }}">{{ img }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>

@@ -3,40 +3,20 @@
 {% block content %}
 
     <div id="image-ruler" class="highlight"> </div>
-    <div id="map" class="map" style="width: 100%; min-width:100%;" oncontextmenu="return false"></div>
+    <div id="map" class="map" style="width: 100%; min-width:100%;" oncontextmenu="return true"></div>
     
     <script type="text/javascript">
-        const viewer = OpenSeadragon({
-            id: "map",
-            prefixUrl: "static/images/",
-            showNavigationControl: true,
-            showNavigator: true,
-            maxZoomPixelRatio: Infinity,
-            tileSources: {
-                minLevel: 8,
-                height: {{ imgheight }},
-                width: {{ imgwidth }},
-                tileSize: 256,
-                getTileUrl: function( level, x, y )
-                {
-                    return "/tile?slug=" + "{{ slug }}" + "&level=" + level + "&x=" + x + "&y=" + y;
-                    
-                },
-            }
-        })
-
+        var viewer = init_viewer("map", "{{slug}}", {{imgheight}}, {{imgwidth}}, {{x}}, {{y}}, {{z}}, {{w}}, {{h}});
+        var selection = init_selection(viewer);
+        
         viewer.initializeAnnotations();
-        var tracker = new OpenSeadragon.MouseTracker({
-            
-            element: "map",
-
-            nonPrimaryPressHandler: function(event) {
-                coords = viewer.tiledImage.imageToViewportCoordinates(event.position);
-                viewer.viewport.panTo(coords);
-                alert(viewer.viewport.getCenter(true) + "\n" + coords);
-            }
+        viewer.addHandler('open', function() {
+            var r = new OpenSeadragon.Rect({{x}}, {{y}}, {{w}}, {{h}});
+            viewer.viewport.fitBounds(r);
         });
-        tracker.setTracking(true);
+        viewer.addHandler('selection', onSelectionConfirmed);
+        
+
     </script>
 
 {% endblock %}

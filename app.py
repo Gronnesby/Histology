@@ -41,7 +41,7 @@ def create_thumbnail(imagefile):
         outfile = imagefile.replace("_map2.jpg", "_thumbnail.jpg")
         im.save(os.path.join(APP.config['pathology_images_path'], outfile), "JPEG")
     except IOError:
-        print "cannot create thumbnail for", imagefile
+        print("cannot create thumbnail for", imagefile)
 
 @APP.context_processor
 def images():
@@ -52,17 +52,33 @@ def images():
 def image():
 
     slug = request.args.get('slug')
-    
     try:
         filename = APP.slugs[slug]
         img = APP.list_of_files[filename]
     except KeyError:
         render_template("404.html")
 
+    z = 0.0
+    x = 0.0
+    y = 0.0
+    w = 0.0
+    h = 0.0
+
+    if 'z' in request.args:
+        z = float(request.args.get('level'))
+    if 'x' in request.args:
+        x = float(request.args.get('x'))
+    if 'y' in request.args:
+        y = float(request.args.get('y'))
+    if 'w' in request.args:
+        w = float(request.args.get('w'))
+    if 'h' in request.args:
+        h = float(request.args.get('h'))
+
     height = img.osr.dimensions[1]
     width = img.osr.dimensions[0]
 
-    return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug)
+    return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug, x=x, y=y, z=z, w=w, h=h)
 
 @APP.route('/map')
 def map():
@@ -95,7 +111,7 @@ def tile():
     x = int(request.args.get('x'))
     y = int(request.args.get('y'))
 
-    print slug, z, x, y
+
     try:
         filename = APP.slugs[slug]
         tileimage = APP.list_of_files[filename].get_tile(z, (x, y))
