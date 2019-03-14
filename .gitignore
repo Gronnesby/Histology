@@ -24,6 +24,7 @@ _testmain.go
 *.prof
 *.pyc
 
+requirements.txt
 static/images/tiles/*
 static/images/*
 project-description/*

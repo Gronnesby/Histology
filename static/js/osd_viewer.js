@@ -1,7 +1,7 @@
 
 
 
-function init_viewer(id, slug, height, width, x, y, z, w, h) {
+function init_viewer(id, slug, height, width) {
 
     var viewer = OpenSeadragon({
         id: id,

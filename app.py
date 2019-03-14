@@ -45,8 +45,8 @@ def create_thumbnail(imagefile):
 
 @APP.context_processor
 def images():
-
     return dict(images=sorted(APP.slugs))
+
 
 @APP.route('/image')
 def image():
@@ -58,11 +58,14 @@ def image():
     except KeyError:
         render_template("404.html")
 
+    height = img.osr.dimensions[1]
+    width = img.osr.dimensions[0]
+
     z = 0.0
     x = 0.0
     y = 0.0
-    w = 0.0
-    h = 0.0
+    w = width
+    h = height
 
     if 'z' in request.args:
         z = float(request.args.get('level'))
@@ -75,8 +78,7 @@ def image():
     if 'h' in request.args:
         h = float(request.args.get('h'))
 
-    height = img.osr.dimensions[1]
-    width = img.osr.dimensions[0]
+
 
     return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug, x=x, y=y, z=z, w=w, h=h)
 

@@ -6,7 +6,7 @@
     <div id="map" class="map" style="width: 100%; min-width:100%;" oncontextmenu="return true"></div>
     
     <script type="text/javascript">
-        var viewer = init_viewer("map", "{{slug}}", {{imgheight}}, {{imgwidth}}, {{x}}, {{y}}, {{z}}, {{w}}, {{h}});
+        var viewer = init_viewer("map", "{{slug}}", {{imgheight}}, {{imgwidth}});
         var selection = init_selection(viewer);
         
         viewer.initializeAnnotations();
@@ -16,7 +16,6 @@
         });
         viewer.addHandler('selection', onSelectionConfirmed);
         
-
     </script>
 
 {% endblock %}
