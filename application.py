@@ -48,6 +48,11 @@ def images():
     return dict(images=sorted(APP.slugs))
 
 
+@APP.route('/test')
+def test():
+    return render_template("404.html")
+
+
 @APP.route('/image')
 def image():
 
@@ -136,6 +141,6 @@ def case():
 
 if __name__ == "__main__":
 
-    APP.debug = True
+    APP.debug = False
     load_images()
-    APP.run(host='0.0.0.0', port=5000)
+    APP.run(host='0.0.0.0', port=80)

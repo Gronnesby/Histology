@@ -24,10 +24,11 @@ _testmain.go
 *.prof
 *.pyc
 
-requirements.txt
 static/images/tiles/*
 static/images/*
 project-description/*
 .DS_Store
 */.DS_Store
 .vscode/
+Dockerfile
+.dockerignore
