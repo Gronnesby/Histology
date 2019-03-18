@@ -1,6 +1,0 @@
-[submodule "gdal2tiles-leaflet"]
-	path = gdal2tiles-leaflet
-	url = https://github.com/commenthol/gdal2tiles-leaflet.git
-[submodule "openslide-python"]
-	path = openslide-python
-	url = git@github.com:openslide/openslide-python
