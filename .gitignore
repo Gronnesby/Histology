@@ -31,5 +31,4 @@ project-description/*
 .DS_Store
 */.DS_Store
 .vscode/
-Dockerfile
 .dockerignore
