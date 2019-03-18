@@ -24,8 +24,9 @@ _testmain.go
 *.prof
 *.pyc
 
+static/*
 static/images/tiles/*
-static/images/*
+static/images/pathology/*
 project-description/*
 .DS_Store
 */.DS_Store
