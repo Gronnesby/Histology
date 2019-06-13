@@ -1,13 +1,17 @@
 
 import os
+import urllib
+import requests
+import tempfile
 
 from flask import Flask, render_template, url_for, abort, make_response, request
 from slide_reader import SlideImage
 from io import BytesIO
 from PIL import Image
 
+from config import THUMBNAIL_SIZE
+
 APP = Flask(__name__)
-THUMBNAIL_SIZE = 500, 500
 
 class PILBytesIO(BytesIO):
     def fileno(self):
@@ -22,9 +26,10 @@ def index():
 
 def load_images():
 
-    APP.config['pathology_images_path'] = './static/images/pathology'
+    APP.config['pathology_images_path'] = 'static/images/pathology'
     APP.list_of_files = {}
     APP.slugs = {}
+
     for (dirpath, _, filenames) in os.walk('static/images/pathology'):
         for filename in filenames:
             if filename.endswith('.vms'):
@@ -32,6 +37,8 @@ def load_images():
                 slug = filename.split(' ')[0]
                 slug = os.path.splitext(slug)[0]
                 APP.slugs[slug] = filename
+
+
 
 def create_thumbnail(imagefile):
 
@@ -82,8 +89,6 @@ def image():
         w = float(request.args.get('w'))
     if 'h' in request.args:
         h = float(request.args.get('h'))
-
-
 
     return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug, x=x, y=y, z=z, w=w, h=h)
 
@@ -136,7 +141,6 @@ def tile():
 def case():
 
     slug = str(request.args.get('slug'))
-
     return render_template("case.html", slug=slug)
 
 if __name__ == "__main__":

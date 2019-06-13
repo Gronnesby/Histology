@@ -1,7 +1,8 @@
 
+import os
+import sys
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
-
 
 class SlideImage(object):
     def __init__(self, filename):
@@ -17,10 +18,7 @@ class SlideImage(object):
             raise
 
         self.zoom = DeepZoomGenerator(self.osr, tile_size=256, limit_bounds=True)
-        print('Filename: {0}'.format(self.filename))
-        print('Tiles in image: {0}'.format(self.zoom.tile_count))
-        print('Tile levels: {0}'.format(self.zoom.level_count))
-        print('Image dimensions: {0}'.format(self.osr.dimensions))
+        print(self.zoom)
 
     def get_image_size(self):
 
@@ -31,9 +29,7 @@ class SlideImage(object):
         image = self.zoom.get_tile(z, coord)
         return image
 
-
-if __name__ == "__main__":
-
-    osr = SlideImage("./static/images/pathology/Snitt25NZHE40 - 2017-02-02 12.58.50.vms")
-    print(osr.get_image_size())
-    osr.get_tile(11, (0, 0)).show()
+    def save(self, dzi_path):
+        pre, _ = os.path.splitext(self.filename)
+        dzi_file = os.path.join(pre, ".dzi")
+        self.zoom.save(os.path.join(dzi_path, dzi_file))
