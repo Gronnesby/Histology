@@ -1,5 +1,5 @@
 
-
+var tiles;
 
 function init_viewer(id, slug, height, width) {
 
@@ -8,21 +8,27 @@ function init_viewer(id, slug, height, width) {
         showNavigationControl: true,
         showNavigator: true,
         maxZoomPixelRatio: 100,
-        prefixUrl: "static/images/",
-        tileSources: {
+        prefixUrl: "static/images/"
+    });
+
+    viewer.addTiledImage({
+        tileSource: {
             minLevel: 8,
             height: height,
             width: width,
             tileSize: 256,
-            getTileUrl: function(level, x, y){
+            getTileUrl: function(level, x, y) {
                 return "/tile?slug=" + slug + "&level=" + level + "&x=" + x + "&y=" + y;
             }
         },
+        success: function(item) {
+            viewer.tiles = item.item;
+        }
     });
-
 
     return viewer;
 }
+
 
 function init_selection(viewer) {
     var selection = viewer.selection({
@@ -55,44 +61,50 @@ function setLoc(viewer, x, y, w, h, z) {
 
 function onSelectionConfirmed(result) {
 
+    tiles = viewer.tiles;
+
     var rect = viewer.viewport.imageToViewportRectangle(result);
     var bb = rect.getBoundingBox();
-    console.dir(r);
 
     var url = new URL(window.location);
-    var baseurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+    var baseurl = window.location.protocol + '//' + window.location.host + '/annotate';
     var slug = url.searchParams.get("slug");
     viewer.viewport.fitBounds(bb);
-    var r = viewer.viewport.getBounds();
 
-    alert(baseurl + "?slug=" + slug + "&x=" + r.x.toFixed(4) + "&y=" + r.y.toFixed(4) + "&w=" + r.width.toFixed(4) + "&h=" + r.height.toFixed(4));
+    var ir = tiles.viewportToImageRectangle(viewer.viewport.getBounds());
+    var x = Math.floor(ir.x);
+    var y = Math.floor(ir.y);
+    var width = Math.floor(ir.width);
+    var height = Math.floor(ir.height);
+    var z = Math.floor(viewer.viewport.getZoom(true));
+
+    var inferenceUrl = baseurl + "?slug=" + slug + "&x=" + x + "&y=" + y + "&w=" + width + "&h=" + height + "&level=" + z;
+
+    fetch(inferenceUrl)
+        .then(function(response){
+            return response.blob();
+        })
+        .then(function(blob){
+
+            const objectURL = URL.createObjectURL(blob);
+
+            // create an image
+            var overlayDiv = document.createElement('div');
+            overlayDiv.id = "annotation-overlay";
+            overlayDiv.className = "highlight";
+            
+            var overlayImg = document.createElement('img');
+            overlayImg.src = objectURL;
+            
+            overlayDiv.appendChild(overlayImg);
+
+            viewer.addOverlay({
+                element: overlayDiv,
+                location: OpenSeadragon.Rect(x, y, width, height)
+            });
+        })
+        .catch(function(error) {
+            // If there is any error you will catch them here
+        });
+
 }
-
-// function non_primary_press_handler (event) {
-
-//     var viewer = event.userData;
-//     var webpoint = event.position;
-
-//     var viewcoords = viewer.viewport.pointFromPixel(webpoint);
-//     var zoom = Math.floor(viewer.viewport.getZoom());
-//     viewer.viewport.panTo(viewcoords, false);
-//     viewer.viewport.zoomTo(zoom + 1);
-
-//     viewer.addOverlay({
-//         element: "map",
-//         location: new OpenSeadragon.Rect(webpoint[0], webpoint[1], 0.02, 0.025)
-//     });
-    
-// }
-
-
-// function non_primary_release_handler (event) {
-    
-//     var viewer = event.userData;
-//     var webpoint = event.position;
-
-//     var viewcoords = viewer.viewport.pointFromPixel(webpoint);
-//     var imagecoords = viewer.viewport.viewportToImageCoordinates(viewcoords);
-
-//     alert("Imagecoords:" + imagecoords);
-// }

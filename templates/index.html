@@ -6,13 +6,13 @@
 
     <h1 style="margin-left:30px;">Snitt</h1>
     {% for img in images %}
-    <div class="card col-md-4" style="width: 200px; margin-left: 30px;">
+    <div class="card col-md-2" style="width: 50%; margin-left: 30px;">
         <a href="/image?slug={{ img }}">
         <img class="card-img-top" src="/map?slug={{ img }}&thumbnail=True" alt="Card image cap" style="width: 200px;">
         </a>
         <div class="card-block">
             <h4 class="card-title">{{ img }}</h4>
-            <p class="card-text">Text here</p>
+            <p class="card-text"></p>
         </div>
     </div>
     {% endfor %}

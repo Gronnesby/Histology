@@ -3,6 +3,7 @@ import os
 import urllib
 import requests
 import tempfile
+import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, url_for, abort, make_response, request
 from slide_reader import SlideImage
@@ -73,9 +74,9 @@ def image():
     height = img.osr.dimensions[1]
     width = img.osr.dimensions[0]
 
-    z = 0.0
-    x = 0.0
-    y = 0.0
+    z = 1.0
+    x = width/2
+    y = height/2
     w = width
     h = height
 
@@ -123,7 +124,6 @@ def tile():
     x = int(request.args.get('x'))
     y = int(request.args.get('y'))
 
-
     try:
         filename = APP.slugs[slug]
         tileimage = APP.list_of_files[filename].get_tile(z, (x, y))
@@ -136,15 +136,61 @@ def tile():
     resp.mimetype = 'image/%s' % 'jpeg'
     return resp
 
-
-@APP.route('/case')
-def case():
+@APP.route('/annotate')
+def annotate():
 
     slug = str(request.args.get('slug'))
-    return render_template("case.html", slug=slug)
+    x = int(request.args.get('x'))
+    y = int(request.args.get('y'))
+    h = int(request.args.get('h'))
+    w = int(request.args.get('w'))
+    z = int(request.args.get('level'))
+
+    try:
+        filename = APP.slugs[slug]
+        img = APP.list_of_files[filename]
+    except KeyError:
+        return render_template('404.html')
+    
+
+    overlay = img.infer((x, y), z, (w, h))
+    
+    buf = PILBytesIO()
+    overlay.convert("1").save(buf, 'png')
+    resp = make_response(buf.getvalue())
+    resp.mimetype = 'image/%s' % 'png'
+
+    return resp
+
+
+@APP.route('/thumbnail')
+def thumbnail():
+    
+    slug = str(request.args.get('slug'))
+    x = int(request.args.get('x'))
+    y = int(request.args.get('y'))
+    h = int(request.args.get('h'))
+    w = int(request.args.get('w'))
+    z = int(request.args.get('level'))
+
+
+    try:
+        filename = APP.slugs[slug]
+        thumb = APP.list_of_files[filename].get_image((x, y), z, (w, h))
+    except KeyError:
+        raise
+
+    buf = PILBytesIO()
+    thumb.save(buf, 'png')
+    resp = make_response(buf.getvalue())
+    resp.mimetype = 'image/%s' % 'png'
+
+    
+
+    return resp
 
 if __name__ == "__main__":
 
-    APP.debug = False
+    APP.debug = True
     load_images()
     APP.run(host='0.0.0.0', port=80)

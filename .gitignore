@@ -32,3 +32,4 @@ project-description/*
 */.DS_Store
 .vscode/
 .dockerignore
+*.mat
