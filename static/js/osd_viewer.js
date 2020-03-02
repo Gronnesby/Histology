@@ -90,17 +90,19 @@ function onSelectionConfirmed(result) {
 
             // create an image
             var overlayDiv = document.createElement('div');
-            overlayDiv.id = "annotation-overlay";
-            overlayDiv.className = "highlight";
+            overlayDiv.id = "image-overlay";
+            overlayDiv.className = "sd-overlay";
             
             var overlayImg = document.createElement('img');
             overlayImg.src = objectURL;
             
             overlayDiv.appendChild(overlayImg);
 
-            viewer.addOverlay({
-                element: overlayDiv,
-                location: OpenSeadragon.Rect(x, y, width, height)
+            var overlay = viewer.canvasOverlay({
+                onRedraw: function() {
+                    overlay.context2d().drawImage(overlayImg, rect.x, rect.y, rect.width, rect.height);
+                },
+                clearBeforeRedraw: true
             });
         })
         .catch(function(error) {
