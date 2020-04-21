@@ -25,6 +25,7 @@ _testmain.go
 *.pyc
 
 #static/*
+static/model/*
 static/images/
 static/images/pathology/*
 project-description/*

@@ -3,13 +3,23 @@ import os
 import sys
 import math
 import PIL
+import numpy as np
+import io
 
+import matplotlib.pyplot as plt
+
+from external_infer import InfererExternal
 
 from scipy.io import loadmat
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 
+
+
 class SlideImage(object):
+    DOWNSAMPLE_FACTOR = 4
+    TILE_SIZE = 254
+
     def __init__(self, filename):
         self.filename = filename
 
@@ -22,8 +32,10 @@ class SlideImage(object):
             print('Unknown Openslide error')
             raise
 
-        self.zoom = DeepZoomGenerator(self.osr, tile_size=256, limit_bounds=True)
-        print(self.zoom)
+        self.zoom = DeepZoomGenerator(self.osr, tile_size=self.TILE_SIZE, limit_bounds=True)
+        print("File {0} \nDimensions (Level 0) {1}\n".format(self.filename, self.osr.dimensions))
+        print("DeepZoom properties:\nLevel count: {0}\nLevel Dimensions:{1}\n".format(self.zoom.level_count, self.zoom.level_dimensions))
+        
 
     def get_image_size(self):
 
@@ -36,26 +48,40 @@ class SlideImage(object):
 
     def get_image(self, coord, z, dim):
 
-        level = (self.osr.level_count -1) - round(z/self.osr.level_count)
-        level = max(0, min((self.osr.level_count-1), level))
+        # level = (self.osr.level_count -1) - round(z/self.osr.level_count)
+        # level = max(0, min((self.osr.level_count-1), level))
+        # downsample = self.osr.level_downsamples[level]
+
+        downsample = self.DOWNSAMPLE_FACTOR
+        level = self.osr.get_best_level_for_downsample(downsample)
 
         print("Level: {0} Z: {1} z/levelcount: {2}".format(level, z, z/self.osr.level_count))
-        downsample = self.osr.level_downsamples[level]
-        dim = (int(dim[0]/(downsample/2)), int(dim[1]/(downsample/2)))
         print("W, H: {0} X, Y: {1} Z: {2} level: {3} downsample: {4} level_count: {5}".format(dim, coord, z, level, downsample, self.osr.level_count))
 
+        dim = (int(dim[0]/downsample), int(dim[1]/downsample))
         image = self.osr.read_region(coord, level, dim)
         return image
 
 
     def infer(self, coord, z, dim):
         
-        # image = self.get_image(coord, z, dim)
+        img = self.get_image(coord, z, dim)
+        print(img)
 
         ## Inference code here
+        ## Should be something like model.predict(img)
+        ## img should be a python PIL image, and it expects the same as output.
+        model = InfererExternal('static/model/compact.pb', io.BytesIO(img.tobytes()), 'static/inference')
+        model.apply_compact()
+
         mat = loadmat('postprocessing_inference.mat')['inst_map']
-        
-        return PIL.Image.fromarray(mat, mode="I")
+        img = PIL.Image.fromarray(mat, mode="I")
+
+        img = img.convert(mode="RGBA")
+        img.putalpha(img.convert(mode="L"))
+
+        return img
+
 
 
 

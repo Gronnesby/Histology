@@ -2,7 +2,7 @@
 {% extends "layout.html" %}
 {% block content %}
 
-    <div id="image-ruler" class="highlight"> </div>
+    
     <div id="map" class="map" style="width: 100%; min-width:100%;" oncontextmenu="return true"></div>
     
     <script type="text/javascript">
@@ -11,10 +11,9 @@
         
         viewer.initializeAnnotations();
         viewer.addHandler('open', function() {
-            var r = new OpenSeadragon.Rect({{x}}, {{y}}, {{w}}, {{h}});
+            var r = new OpenSeadragon.Rect({{x}}, {{y}}, {{w}}, {{h}}, {{tileSize}});
             viewer.viewport.fitBounds(r);
         });
-        viewer.addHandler('selection', onSelectionConfirmed);
         
     </script>
 

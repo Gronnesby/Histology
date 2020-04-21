@@ -85,6 +85,10 @@ body, html, .container-fluid, .sidebar, .body {
     fill-opacity: .15;
 }
 
+img:hover {
+  opacity: 0.5;
+}
+
 body {
     position: relative;
     overflow-x: hidden;

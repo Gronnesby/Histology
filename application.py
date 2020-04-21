@@ -91,7 +91,7 @@ def image():
     if 'h' in request.args:
         h = float(request.args.get('h'))
 
-    return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug, x=x, y=y, z=z, w=w, h=h)
+    return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug, x=x, y=y, z=z, w=w, h=h, tileSize=img.TILE_SIZE+2)
 
 @APP.route('/map')
 def map():
@@ -156,7 +156,7 @@ def annotate():
     overlay = img.infer((x, y), z, (w, h))
     
     buf = PILBytesIO()
-    overlay.convert("1").save(buf, 'png')
+    overlay.convert("P", palette=Image.ADAPTIVE, colors = 4).save(buf, 'png')
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % 'png'
 
@@ -184,8 +184,6 @@ def thumbnail():
     thumb.save(buf, 'png')
     resp = make_response(buf.getvalue())
     resp.mimetype = 'image/%s' % 'png'
-
-    
 
     return resp
 

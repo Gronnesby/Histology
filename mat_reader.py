@@ -7,10 +7,13 @@ import matplotlib.pyplot as plt
 
 def plot_postprocessed(data):
 
-    print(data)
-    data = data['inst_map']
-    data = PIL.Image.fromarray(data, mode='I')
+    print(data.keys())
 
+    data = data['inst_map']
+    alphamap = PIL.Image.fromarray(data, mode='I')
+    data = alphamap.convert(mode="RGBA")
+    data.putalpha(data.convert(mode="L"))
+    
     plt.subplot(1, 2, 1)
     plt.imshow(data)
     plt.xlabel('Postprocessed output')
