@@ -4,7 +4,6 @@ Werkzeug
 openslide-python
 requests
 numpy
-opencv-python
 scipy
 scikit-image
 matplotlib

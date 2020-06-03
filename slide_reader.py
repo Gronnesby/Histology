@@ -6,7 +6,6 @@ import PIL
 import numpy as np
 import io
 
-from infer import geometric_analysis
 
 from scipy.io import loadmat
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
