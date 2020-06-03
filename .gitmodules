@@ -1,0 +1,3 @@
+[submodule "heimmune"]
+	path = heimmune
+	url = https://github.com/edvardpedersen/heimmune

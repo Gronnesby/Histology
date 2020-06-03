@@ -6,9 +6,7 @@ import PIL
 import numpy as np
 import io
 
-import matplotlib.pyplot as plt
-
-from external_infer import InfererExternal
+from infer import geometric_analysis
 
 from scipy.io import loadmat
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
@@ -66,19 +64,17 @@ class SlideImage(object):
     def infer(self, coord, z, dim):
         
         img = self.get_image(coord, z, dim)
-        print(img)
+        
 
         ## Inference code here
         ## Should be something like model.predict(img)
         ## img should be a python PIL image, and it expects the same as output.
-        model = InfererExternal('static/model/compact.pb', io.BytesIO(img.tobytes()), 'static/inference')
-        model.apply_compact()
+        img = img.convert(mode="RGB")
+        img.name = self.filename
+        immunecells, mask, img = geometric_analysis(np.array(img))
 
-        mat = loadmat('postprocessing_inference.mat')['inst_map']
-        img = PIL.Image.fromarray(mat, mode="I")
-
-        img = img.convert(mode="RGBA")
-        img.putalpha(img.convert(mode="L"))
+        img = PIL.Image.fromarray(img, mode="P")
+        # img.putalpha(img.convert(mode="L"))
 
         return img
 

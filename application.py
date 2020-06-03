@@ -3,7 +3,6 @@ import os
 import urllib
 import requests
 import tempfile
-import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, url_for, abort, make_response, request
 from slide_reader import SlideImage

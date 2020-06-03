@@ -2,3 +2,9 @@ flask
 jinja2
 Werkzeug
 openslide-python
+requests
+numpy
+opencv-python
+scipy
+scikit-image
+matplotlib
