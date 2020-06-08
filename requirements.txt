@@ -3,4 +3,7 @@ jinja2
 Werkzeug
 openslide-python
 requests
-
+numpy
+scipy
+scikit-image
+matplotlib
