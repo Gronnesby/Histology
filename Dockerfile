@@ -1,7 +1,7 @@
 # Use an official Python runtime as a parent image
-FROM ubuntu:focal
+FROM python:3.8.3-slim-buster
 
-RUN apt-get update && apt-get install -y python3 python3-pip python3-dev libopenslide-dev git
+RUN apt-get update && apt-get install -y libopenslide-dev git
 
 # Copy the current directory contents into the container at /app
 RUN git clone https://github.com/gronnesby/histology
