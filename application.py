@@ -187,6 +187,6 @@ def thumbnail():
 
 if __name__ == "__main__":
 
-    APP.debug = True
+    APP.debug = False
     load_images()
     APP.run(host='0.0.0.0', port=80)
