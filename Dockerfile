@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM ubuntu:16.04
+FROM ubuntu:focal
 
 RUN apt-get update && apt-get install -y python3 python3-pip python3-dev libopenslide-dev git
 
