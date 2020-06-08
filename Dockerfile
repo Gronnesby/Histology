@@ -3,8 +3,6 @@ FROM python:3.8.3-slim-buster
 
 RUN apt-get update && apt-get install -y libopenslide-dev git gcc
 
-# Clone the histology application repository
-RUN git clone https://github.com/gronnesby/histology
 WORKDIR /histology
 
 # Setuptools version > 45 fails with an import error
