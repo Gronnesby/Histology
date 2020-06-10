@@ -10,7 +10,7 @@ WORKDIR /histology
 # Create a virual environment in the workdir
 RUN pip3 install virtualenv
 RUN python -m virtualenv .
-RUN source bin/activate
+RUN /bin/bash -c "source /histology/bin/activate"
 
 # Setuptools version > 45 fails with an import error
 RUN pip3 install --upgrade setuptools==45
