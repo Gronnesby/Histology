@@ -8,6 +8,7 @@ RUN git clone --single-branch --branch azure https://github.com/gronnesby/histol
 WORKDIR /histology
 
 # Create a virual environment in the workdir
+RUN pip3 install virtualenv
 RUN python -m virtualenv .
 RUN source bin/activate
 
