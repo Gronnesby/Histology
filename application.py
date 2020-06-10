@@ -17,12 +17,6 @@ class PILBytesIO(BytesIO):
         '''Classic PIL doesn't understand io.UnsupportedOperation.'''
         raise AttributeError('Not supported')
 
-@APP.route('/')
-@APP.route('/index')
-def index():
-    return render_template("index.html", title="Home")
-
-
 def load_images():
 
     APP.config['pathology_images_path'] = 'static/images/pathology'
@@ -37,7 +31,12 @@ def load_images():
                 slug = os.path.splitext(slug)[0]
                 APP.slugs[slug] = filename
 
+APP.before_first_request(load_images)
 
+@APP.route('/')
+@APP.route('/index')
+def index():
+    return render_template("index.html", title="Home")
 
 def create_thumbnail(imagefile):
 
@@ -186,7 +185,5 @@ def thumbnail():
     return resp
 
 if __name__ == "__main__":
-
-    APP.debug = False
     load_images()
-    APP.run(host='0.0.0.0', port=80)
+    APP.run()

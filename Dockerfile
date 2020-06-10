@@ -11,9 +11,8 @@ WORKDIR /histology
 RUN pip3 install --upgrade setuptools==45
 # Install any needed packages specified in requirements.txt
 RUN pip3 install --trusted-host pypi.python.org -r requirements.txt
-RUN pip3 install requests 
 
 EXPOSE 80
 
 # Run application.py when the container launches
-CMD ["python3", "application.py"]
+CMD ["gunicorn", "--timeout", "600", "--bind", "0.0.0.0", "wsgi:APP"]
