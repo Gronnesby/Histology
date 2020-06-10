@@ -3,14 +3,10 @@ import os
 import sys
 import math
 import PIL
-import numpy as np
 import io
 
-
-from scipy.io import loadmat
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
-
 
 
 class SlideImage(object):
@@ -70,9 +66,9 @@ class SlideImage(object):
         ## img should be a python PIL image, and it expects the same as output.
         img = img.convert(mode="RGB")
         img.name = self.filename
-        immunecells, mask, img = geometric_analysis(np.array(img))
+        
 
-        img = PIL.Image.fromarray(img, mode="P")
+        # img = PIL.Image.fromarray(img, mode="P")
         # img.putalpha(img.convert(mode="L"))
 
         return img

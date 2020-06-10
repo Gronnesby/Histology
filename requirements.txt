@@ -3,4 +3,3 @@ jinja2
 Werkzeug
 openslide-python
 requests
-gunicorn
