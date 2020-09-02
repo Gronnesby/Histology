@@ -2,5 +2,12 @@ flask
 jinja2
 Werkzeug
 openslide-python
-requests
 gunicorn
+pyyaml>=5.3.1
+requests>=2.23.0
+pillow>=7.1.2
+numpy>=1.15.4
+scipy>=1.4.1
+scikit-image>=0.14.2
+matplotlib>=3.0.2
+opencv-python>=4.1.2.30

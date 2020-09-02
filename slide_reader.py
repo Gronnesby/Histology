@@ -4,17 +4,23 @@ import sys
 import math
 import PIL
 import io
+import cProfile
+import matplotlib.pyplot as plt
 
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 
+from hover_serving.src.external_infer_url import InfererURL
+
+DOWNSAMPLE_FACTOR = 1
 
 class SlideImage(object):
-    DOWNSAMPLE_FACTOR = 4
+
     TILE_SIZE = 254
 
-    def __init__(self, filename):
+    def __init__(self, filename, downsample=DOWNSAMPLE_FACTOR):
         self.filename = filename
+        self.downsample = downsample
 
         try:
             self.osr = OpenSlide(self.filename)
@@ -29,6 +35,8 @@ class SlideImage(object):
         print("File {0} \nDimensions (Level 0) {1}\n".format(self.filename, self.osr.dimensions))
         print("DeepZoom properties:\nLevel count: {0}\nLevel Dimensions:{1}\n".format(self.zoom.level_count, self.zoom.level_dimensions))
         
+    def set_downsample(self, ds):
+        self.downsample = ds
 
     def get_image_size(self):
 
@@ -45,13 +53,12 @@ class SlideImage(object):
         # level = max(0, min((self.osr.level_count-1), level))
         # downsample = self.osr.level_downsamples[level]
 
-        downsample = self.DOWNSAMPLE_FACTOR
-        level = self.osr.get_best_level_for_downsample(downsample)
+        level = self.osr.get_best_level_for_downsample(self.downsample)
 
         print("Level: {0} Z: {1} z/levelcount: {2}".format(level, z, z/self.osr.level_count))
-        print("W, H: {0} X, Y: {1} Z: {2} level: {3} downsample: {4} level_count: {5}".format(dim, coord, z, level, downsample, self.osr.level_count))
+        print("W, H: {0} X, Y: {1} Z: {2} level: {3} downsample: {4} level_count: {5}".format(dim, coord, z, level, self.downsample, self.osr.level_count))
 
-        dim = (int(dim[0]/downsample), int(dim[1]/downsample))
+        dim = (int(dim[0]/self.downsample), int(dim[1]/self.downsample))
         image = self.osr.read_region(coord, level, dim)
         return image
 
@@ -59,7 +66,9 @@ class SlideImage(object):
     def infer(self, coord, z, dim):
         
         img = self.get_image(coord, z, dim)
-        
+
+        plt.imshow(img)
+        plt.show()
 
         ## Inference code here
         ## Should be something like model.predict(img)
@@ -67,15 +76,37 @@ class SlideImage(object):
         img = img.convert(mode="RGB")
         img.name = self.filename
         
+        infer = InfererURL(img, 'http://hovernet.northeurope.azurecontainer.io:8501/v1/models/hover_pannuke:predict', 'hv_seg_class_pannuke')
+        overlay = infer.run()
+        overlay = overlay[:, :, 0]
 
-        # img = PIL.Image.fromarray(img, mode="P")
+        # overlay = PIL.Image.fromarray(overlay, mode="P")
         # img.putalpha(img.convert(mode="L"))
+
+        plt.imshow(img)
+        plt.imshow(overlay, alpha=0.5)
+
+        plt.show()
 
         return img
 
 
+    def benchmark(self):
+        coord = (50371, 50357)
+        z = 20
+        dim = (5500, 4000)
+
+        self.set_downsample(8)
+        self.infer(coord, z, dim)
 
 
 if __name__ == "__main__":
 
-    pass
+    s = SlideImage('static/images/pathology/Snitt25NZHE40 - 2017-02-02 12.58.50.vms')
+
+    # cProfile.run('s.benchmark()', sort='cumtime')
+
+    s.benchmark()
+
+
+        

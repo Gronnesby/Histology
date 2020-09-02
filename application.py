@@ -19,17 +19,19 @@ class PILBytesIO(BytesIO):
 
 def load_images():
 
-    APP.config['pathology_images_path'] = 'static/images/pathology'
+    APP.config['pathology_images_path'] = 'static/images/pathology/'
     APP.list_of_files = {}
     APP.slugs = {}
-
+    
+    
     for (dirpath, _, filenames) in os.walk('static/images/pathology'):
         for filename in filenames:
-            if filename.endswith('.vms'):
+            if filename.endswith('Snitt25NZHE40 - 2017-02-02 12.58.50.vms'):
                 APP.list_of_files[filename] = SlideImage(os.sep.join([dirpath, filename]))
                 slug = filename.split(' ')[0]
                 slug = os.path.splitext(slug)[0]
                 APP.slugs[slug] = filename
+                return
 
 APP.before_first_request(load_images)
 
