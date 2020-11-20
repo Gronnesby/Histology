@@ -60,13 +60,15 @@ class SlideImage(object):
         
         img = self.get_image(coord, z, dim)
         
-
         ## Inference code here
         ## Should be something like model.predict(img)
         ## img should be a python PIL image, and it expects the same as output.
         img = img.convert(mode="RGB")
         img.name = self.filename
         
+        # resp = InfererURL(img, None, "http://20.191.54.229:8501/v1/models/hover_pannuke:predict").run()
+        # print(resp)
+
 
         # img = PIL.Image.fromarray(img, mode="P")
         # img.putalpha(img.convert(mode="L"))
