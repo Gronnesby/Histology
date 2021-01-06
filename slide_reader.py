@@ -70,6 +70,7 @@ class SlideImage(object):
         plt.imshow(img)
         plt.show()
 
+        
         ## Inference code here
         ## Should be something like model.predict(img)
         ## img should be a python PIL image, and it expects the same as output.

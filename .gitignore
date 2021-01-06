@@ -35,3 +35,4 @@ project-description/*
 .dockerignore
 *.mat
 .azure/*
+hover_serving/*

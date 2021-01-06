@@ -3,4 +3,4 @@
 	url = https://github.com/edvardpedersen/heimmune
 [submodule "hover-serving"]
 	path = hover-serving
-	url = https://github.com/nsh23/hover-serving
+	url = https://github.com/nsh23/hover-serving.git

@@ -15,4 +15,4 @@ RUN python3 -m pip install --trusted-host pypi.python.org -r requirements.txt
 EXPOSE 80
 
 # Run application.py when the container launches
-CMD ["gunicorn", "--timeout", "600", "--bind", "0.0.0.0:80", "wsgi:APP"]
+CMD ["gunicorn", "-w", "12", "--timeout", "600", "--bind", "0.0.0.0:80", "wsgi:APP"]
