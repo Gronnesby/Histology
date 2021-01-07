@@ -2,190 +2,147 @@
 import os
 import urllib
 import tempfile
-
-from flask import Flask, render_template, url_for, abort, make_response, request
-from slide_reader import SlideImage
+import slugify
 from io import BytesIO
+from collections import OrderedDict
+from threading import Lock
+
 from PIL import Image
+from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
+from openslide.deepzoom import DeepZoomGenerator
+from flask import Flask, render_template, url_for, abort, make_response, request
 
-from config import THUMBNAIL_SIZE
+from slide_reader import SlideImage
+from config import *
 
-APP = Flask(__name__)
+
+app = Flask(__name__)
 
 class PILBytesIO(BytesIO):
     def fileno(self):
         '''Classic PIL doesn't understand io.UnsupportedOperation.'''
         raise AttributeError('Not supported')
 
-def load_images():
+class _SlideCache(object):
+    def __init__(self, cache_size, dz_opts):
+        self.cache_size = cache_size
+        self.dz_opts = dz_opts
+        self._lock = Lock()
+        self._cache = OrderedDict()
 
-    APP.config['pathology_images_path'] = 'static/images/pathology/'
-    APP.list_of_files = {}
-    APP.slugs = {}
-    
-    
-    for (dirpath, _, filenames) in os.walk('static/images/pathology'):
-        for filename in filenames:
-            if filename.endswith('Snitt25NZHE40 - 2017-02-02 12.58.50.vms'):
-                APP.list_of_files[filename] = SlideImage(os.sep.join([dirpath, filename]))
-                slug = filename.split(' ')[0]
-                slug = os.path.splitext(slug)[0]
-                APP.slugs[slug] = filename
-                return
+    def get(self, path):
+        with self._lock:
+            if path in self._cache:
+                # Move to end of LRU
+                slide = self._cache.pop(path)
+                self._cache[path] = slide
+                return slide
 
-APP.before_first_request(load_images)
+        osr = OpenSlide(path)
+        slide = DeepZoomGenerator(osr, **self.dz_opts)
 
-@APP.route('/')
-@APP.route('/index')
+        with self._lock:
+            if path not in self._cache:
+                if len(self._cache) == self.cache_size:
+                    self._cache.popitem(last=False)
+                self._cache[path] = slide
+        return slide
+
+
+def load_slides():
+
+    app.basedir = os.path.abspath(SLIDE_DIR)
+    opts = {
+        'tile_size': DEEPZOOM_TILE_SIZE,
+        'overlap': DEEPZOOM_TILE_OVERLAP,
+        'limit_bounds': DEEPZOOM_LIMIT_BOUNDS,
+    }
+    app.cache = _SlideCache(SLIDE_CACHE_SIZE, opts)
+    app.slides = []
+    app.thumbnails = []
+
+    for fname in os.listdir(app.basedir):
+        if fname.endswith(".vms"):
+            app.slides.append(fname)
+        if fname.endswith("_thumbnail.jpg"):
+            app.thumbnails.append(fname)
+
+
+def _get_slide(path):
+    path = os.path.abspath(os.path.join(app.basedir, path))
+    if not path.startswith(app.basedir + os.path.sep):
+        # Directory traversal
+        abort(404)
+    if not os.path.exists(path):
+        abort(404)
+    try:
+        slide = app.cache.get(path)
+        slide.filename = os.path.basename(path)
+        return slide
+    except OpenSlideError:
+        abort(404)
+
+
+@app.route('/')
+@app.route('/index')
 def index():
-    return render_template("index.html", title="Home")
+    return render_template("index.html", title="Home", files=app.slides)
 
-def create_thumbnail(imagefile):
+@app.route('/slide/<path:path>')
+def slide(path):
+    slide_url = url_for('dzi', path=path)
+    return render_template('slide.html', slide_url=slide_url)
+
+
+@app.route('/<path:path>.dzi')
+def dzi(path):
+    slide = _get_slide(path)
+    resp = make_response(slide.get_dzi(DEEPZOOM_FORMAT))
+    resp.mimetype = 'application/xml'
+    return resp
+
+
+@app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<format>')
+def tile(path, level, col, row, format):
+    slide = _get_slide(path)
+    format = format.lower()
+    if format != 'jpeg' and format != 'png':
+        # Not supported by Deep Zoom
+        abort(404)
+    try:
+        tile = slide.get_tile(level, (col, row))
+    except ValueError:
+        # Invalid level or coordinates
+        abort(404)
+    buf = PILBytesIO()
+    tile.save(buf, format, quality=DEEPZOOM_TILE_QUALITY)
+    resp = make_response(buf.getvalue())
+    resp.mimetype = 'image/%s' % format
+    return resp
+
+@app.route
+@app.route('/thumbnail/<path:path>')
+def thumbnail(path):
 
     try:
-        im = Image.open(os.path.join(APP.config['pathology_images_path'], imagefile))
-        im.thumbnail(THUMBNAIL_SIZE)
-        outfile = imagefile.replace("_map2.jpg", "_thumbnail.jpg")
-        im.save(os.path.join(APP.config['pathology_images_path'], outfile), "JPEG")
-    except IOError:
-        print("cannot create thumbnail for", imagefile)
-
-@APP.context_processor
-def images():
-    return dict(images=sorted(APP.slugs))
-
-
-@APP.route('/test')
-def test():
-    return render_template("404.html")
-
-
-@APP.route('/image')
-def image():
-
-    slug = request.args.get('slug')
-    try:
-        filename = APP.slugs[slug]
-        img = APP.list_of_files[filename]
-    except KeyError:
-        render_template("404.html")
-
-    height = img.osr.dimensions[1]
-    width = img.osr.dimensions[0]
-
-    z = 1.0
-    x = width/2
-    y = height/2
-    w = width
-    h = height
-
-    if 'z' in request.args:
-        z = float(request.args.get('level'))
-    if 'x' in request.args:
-        x = float(request.args.get('x'))
-    if 'y' in request.args:
-        y = float(request.args.get('y'))
-    if 'w' in request.args:
-        w = float(request.args.get('w'))
-    if 'h' in request.args:
-        h = float(request.args.get('h'))
-
-    return render_template("slide.html", imgheight=height, imgwidth=width, slug=slug, x=x, y=y, z=z, w=w, h=h, tileSize=img.TILE_SIZE+2)
-
-@APP.route('/map')
-def map():
-
-    slug = request.args.get('slug')
-
-    try:
-        filename = APP.slugs[slug]
-
-        imgfile = os.path.splitext(filename)[0]
+        imgfile = os.path.splitext(path)[0]
         thumbnail = imgfile + "_thumbnail.jpg"
 
+        if thumbnail not in app.thumbnails:
+            raise KeyError
+
     except KeyError:
-        raise
+        abort(404)
 
     try:
-        with open((os.path.join(APP.config['pathology_images_path'], thumbnail)), 'rb') as fp:
+        with open(os.path.abspath(os.path.join(app.basedir, thumbnail)), 'rb') as fp:
             resp = make_response(fp.read())
             resp.mimetype = 'image/%s' % 'jpg'
     except IOError:
-        raise
+        abort(404)
     return resp
 
-
-@APP.route('/tile')
-def tile():
-
-    slug = str(request.args.get('slug'))
-    z = int(request.args.get('level'))
-    x = int(request.args.get('x'))
-    y = int(request.args.get('y'))
-
-    try:
-        filename = APP.slugs[slug]
-        tileimage = APP.list_of_files[filename].get_tile(z, (x, y))
-    except KeyError:
-        raise
-
-    buf = PILBytesIO()
-    tileimage.save(buf, 'jpeg')
-    resp = make_response(buf.getvalue())
-    resp.mimetype = 'image/%s' % 'jpeg'
-    return resp
-
-@APP.route('/annotate')
-def annotate():
-
-    slug = str(request.args.get('slug'))
-    x = int(request.args.get('x'))
-    y = int(request.args.get('y'))
-    h = int(request.args.get('h'))
-    w = int(request.args.get('w'))
-    z = int(request.args.get('level'))
-
-    try:
-        filename = APP.slugs[slug]
-        img = APP.list_of_files[filename]
-    except KeyError:
-        return render_template('404.html')
-    
-
-    overlay = img.infer((x, y), z, (w, h))
-    
-    buf = PILBytesIO()
-    overlay.convert("P", palette=Image.ADAPTIVE, colors = 4).save(buf, 'png')
-    resp = make_response(buf.getvalue())
-    resp.mimetype = 'image/%s' % 'png'
-
-    return resp
-
-
-@APP.route('/thumbnail')
-def thumbnail():
-    
-    slug = str(request.args.get('slug'))
-    x = int(request.args.get('x'))
-    y = int(request.args.get('y'))
-    h = int(request.args.get('h'))
-    w = int(request.args.get('w'))
-    z = int(request.args.get('level'))
-
-
-    try:
-        filename = APP.slugs[slug]
-        thumb = APP.list_of_files[filename].get_image((x, y), z, (w, h))
-    except KeyError:
-        raise
-
-    buf = PILBytesIO()
-    thumb.save(buf, 'png')
-    resp = make_response(buf.getvalue())
-    resp.mimetype = 'image/%s' % 'png'
-
-    return resp
 
 if __name__ == "__main__":
-    load_images()
-    APP.run()
+    load_slides()
+    app.run()

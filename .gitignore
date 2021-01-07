@@ -36,3 +36,4 @@ project-description/*
 *.mat
 .azure/*
 hover_serving/*
+examples/*

@@ -2,19 +2,41 @@
 {% extends "layout.html" %}
 {% block content %}
 
+
+<div id="view" class="map" style="width: 100%; min-width:100%;"></div>
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    var viewer = new OpenSeadragon({
+        id: "view",
+        tileSources: "{{ slide_url }}",
+        prefixUrl: "{{ url_for('static', filename='images/') }}",
+        showNavigator: true,
+        showRotationControl: false,
+        animationTime: 0.5,
+        blendTime: 0.1,
+        constrainDuringPan: true,
+        maxZoomPixelRatio: 2,
+        minZoomLevel: 1,
+        visibilityRatio: 1,
+        zoomPerScroll: 0.01,
+        timeout: 12000,
+        gestureSettingsMouse: {
+            scrollToZoom: true,
+            clickToZoom: false,
+            dblClickToZoom: true,
+        },
+    });
+    viewer.addHandler("open", function() {
+        // To improve load times, ignore the lowest-resolution Deep Zoom
+        // levels.  This is a hack: we can't configure the minLevel via
+        // OpenSeadragon configuration options when the viewer is created
+        // from DZI XML.
+        viewer.source.minLevel = 8;
+    });
+});
+</script>
     
-    <div id="map" class="map" style="width: 100%; min-width:100%;" oncontextmenu="return true"></div>
-    
-    <script type="text/javascript">
-        var viewer = init_viewer("map", "{{slug}}", {{imgheight}}, {{imgwidth}});
-        var selection = init_selection(viewer);
-        
-        viewer.initializeAnnotations();
-        viewer.addHandler('open', function() {
-            var r = new OpenSeadragon.Rect({{x}}, {{y}}, {{w}}, {{h}}, {{tileSize}});
-            viewer.viewport.fitBounds(r);
-        });
-        
-    </script>
 
 {% endblock %}

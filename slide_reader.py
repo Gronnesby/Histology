@@ -10,15 +10,15 @@ import matplotlib.pyplot as plt
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 
+from config import DEEPZOOM_TILE_OVERLAP, DEEPZOOM_TILE_SIZE, DEEPZOOM_DOWNSAMPLE_FACTOR
 from hover_serving.src.external_infer_url import InfererURL
 
-DOWNSAMPLE_FACTOR = 1
 
 class SlideImage(object):
 
-    TILE_SIZE = 254
+    
 
-    def __init__(self, filename, downsample=DOWNSAMPLE_FACTOR):
+    def __init__(self, filename, downsample=DEEPZOOM_DOWNSAMPLE_FACTOR):
         self.filename = filename
         self.downsample = downsample
 
@@ -31,7 +31,7 @@ class SlideImage(object):
             print('Unknown Openslide error')
             raise
 
-        self.zoom = DeepZoomGenerator(self.osr, tile_size=self.TILE_SIZE, limit_bounds=True)
+        self.zoom = DeepZoomGenerator(self.osr, tile_size=DEEPZOOM_TILE_SIZE, limit_bounds=False)
         print("File {0} \nDimensions (Level 0) {1}\n".format(self.filename, self.osr.dimensions))
         print("DeepZoom properties:\nLevel count: {0}\nLevel Dimensions:{1}\n".format(self.zoom.level_count, self.zoom.level_dimensions))
         
@@ -66,10 +66,6 @@ class SlideImage(object):
     def infer(self, coord, z, dim):
         
         img = self.get_image(coord, z, dim)
-
-        plt.imshow(img)
-        plt.show()
-
         
         ## Inference code here
         ## Should be something like model.predict(img)
