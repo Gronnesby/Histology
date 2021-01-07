@@ -12,7 +12,6 @@ from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 from flask import Flask, render_template, url_for, abort, make_response, request
 
-from slide_reader import SlideImage
 from config import *
 
 

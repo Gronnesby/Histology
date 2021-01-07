@@ -11,7 +11,7 @@ from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 
 from config import DEEPZOOM_TILE_OVERLAP, DEEPZOOM_TILE_SIZE, DEEPZOOM_DOWNSAMPLE_FACTOR
-from hover_serving.src.external_infer_url import InfererURL
+
 
 
 class SlideImage(object):
@@ -73,17 +73,17 @@ class SlideImage(object):
         img = img.convert(mode="RGB")
         img.name = self.filename
         
-        infer = InfererURL(img, 'http://hovernet.northeurope.azurecontainer.io:8501/v1/models/hover_pannuke:predict', 'hv_seg_class_pannuke')
-        overlay = infer.run()
-        overlay = overlay[:, :, 0]
+        #infer = InfererURL(img, 'http://hovernet.northeurope.azurecontainer.io:8501/v1/models/hover_pannuke:predict', 'hv_seg_class_pannuke')
+        #overlay = infer.run()
+        #overlay = overlay[:, :, 0]
 
         # overlay = PIL.Image.fromarray(overlay, mode="P")
         # img.putalpha(img.convert(mode="L"))
 
-        plt.imshow(img)
-        plt.imshow(overlay, alpha=0.5)
+        #plt.imshow(img)
+        #plt.imshow(overlay, alpha=0.5)
 
-        plt.show()
+        #plt.show()
 
         return img
 
