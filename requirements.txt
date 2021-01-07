@@ -3,6 +3,7 @@ jinja2
 Werkzeug
 openslide-python
 gunicorn
+python-slugify
 pyyaml>=5.3.1
 requests>=2.23.0
 pillow>=7.1.2
