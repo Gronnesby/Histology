@@ -107,6 +107,7 @@ def slide(path):
 
 @app.route('/<path:path>.dzi')
 def dzi(path):
+    slide = _get_slide(path)
     resp = make_response(slide.get_dzi(DEEPZOOM_FORMAT))
     resp.mimetype = 'application/xml'
     return resp
