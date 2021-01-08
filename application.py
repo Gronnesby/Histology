@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+#
+# Adapted from the deepzoom_multiserver.py from https://github.com/openslide/openslide-python (Copyright (c) 2010-2015 Carnegie Mellon University)
+# Major changes made:
+# - Changed config to use variables in config.py instead of global variables here.
+# - Dropped the classes for SlideImage and Directory.
+# - Changed the endpoints to work with the projects structure.
+# - Added a thumbnail endpoint.
+#
+# 
+#
+#
 
 import os
 import urllib
@@ -95,7 +107,6 @@ def slide(path):
 
 @app.route('/<path:path>.dzi')
 def dzi(path):
-    slide = _get_slide(path)
     resp = make_response(slide.get_dzi(DEEPZOOM_FORMAT))
     resp.mimetype = 'application/xml'
     return resp
