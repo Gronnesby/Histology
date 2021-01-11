@@ -35,6 +35,12 @@ $(document).ready(function() {
         // from DZI XML.
         viewer.source.minLevel = 8;
     });
+    viewer.selection({
+        allowRotation: false,
+        onSelection: function(rect) {
+            onSelectionConfirmed(viewer, rect)
+        }
+    });
 });
 </script>
     

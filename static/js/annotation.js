@@ -1,81 +1,36 @@
 
-var tiles;
-var viewer;
-
-function init_viewer(id, slug, height, width, size) {
-
-    viewer = OpenSeadragon({
-        id: id,
-        showNavigationControl: true,
-        showNavigator: true,
-        maxZoomPixelRatio: 100,
-        prefixUrl: "static/images/"
-    });
-
-    viewer.addTiledImage({
-        tileSource: {
-            minLevel: 8,
-            height: height,
-            width: width,
-            tileSize: 254,
-            tileOverlap: 2,
-            getTileUrl: function(level, x, y) {
-                return "/tile?slug=" + slug + "&level=" + level + "&x=" + x + "&y=" + y;
-            }
-        },
-        success: function(item) {
-            viewer.tiles = item.item;
-        }
-    });
-}
 
 
-function init_selection(viewer) {
-    var selection = viewer.selection({
-        allowRotation: false,
-        onSelection: onSelectionConfirmed,
-    })
 
-    return selection
-}
+async function onSelectionConfirmed(viewer, rect)
+{
 
-function init_tracker (id, viewer) {
-
-    var tracker = new OpenSeadragon.MouseTracker({
-        element: id,
-        userData: viewer,
-        restrictToImage: true
-    });
-
-    return tracker;
-}
-
-
-function setLoc(viewer, x, y, w, h, z) {
-    var r = new OpenSeadragon.Rect(x, y, w, h);
-    viewer.viewport.fitBounds(r, true);
-    console.dir(viewer.viewport.getBounds());
-}
-
-function onSelectionConfirmed(rect) {
-
-    // var bb = rect.getBoundingBox();
-    var viewer = self.viewer;
-
-    //var url = new URL(window.location);
+    var url = new URL(window.location);
+    var path = window.location.pathname;
     var baseurl = window.location.protocol + '//' + window.location.host + '/annotate';
-    
+
     var x = Math.floor(rect.x);
     var y = Math.floor(rect.y);
     var width = Math.floor(rect.width);
     var height = Math.floor(rect.height);
     var z = Math.floor(viewer.viewport.getZoom(true));
 
+    var vp = viewer.viewport.imageToViewportRectangle(rect.x, rect.y, rect.width, rect.height);
 
-    var inferenceUrl = baseurl + "?slug=" + slug + "&x=" + x + "&y=" + y + "&w=" + width + "&h=" + height + "&level=" + z;
-    
+    var elt = document.createElement("div");
+    elt.id = "runtime-overlay";
+    elt.className = "overlay";
+    viewer.addOverlay({
+        element: elt,
+        location: new OpenSeadragon.Rect(vp.x, vp.y, vp.width, vp.height)
+    });
 
-    fetch(inferenceUrl)
+    var slidename = path.substring(path.lastIndexOf('/') + 1);
+    var annotateURL = baseurl + `/${slidename}/${z}/${x}_${y}/${width}_${height}`;
+
+    alert(annotateURL);
+
+    fetch(annotateURL)
         .then(function(response){
             return response.blob();
         })
@@ -128,5 +83,4 @@ function onSelectionConfirmed(rect) {
         .catch(function(error) {
             // If there is any error you will catch them here
         });
-
 }

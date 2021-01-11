@@ -154,6 +154,37 @@ def thumbnail(path):
     return resp
 
 
+
+@app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>')
+def annotate(path, z, x, y, w, h):
+
+    print("Path: {0}".format(path))
+    slide = _get_slide(path)
+    osr = slide._osr
+
+    coord = (x, y)
+    dim = (w, h)
+
+    level = osr.get_best_level_for_downsample(DEEPZOOM_DOWNSAMPLE_FACTOR)
+
+    print("Level: {0} Z: {1} z/levelcount: {2}".format(level, z, z/osr.level_count))
+    print("W, H: {0} X, Y: {1} Z: {2} level: {3} downsample: {4} level_count: {5}".format(dim, coord, z, level, DEEPZOOM_DOWNSAMPLE_FACTOR, osr.level_count))
+
+    dim = (int(dim[0]/DEEPZOOM_DOWNSAMPLE_FACTOR), int(dim[1]/DEEPZOOM_DOWNSAMPLE_FACTOR))
+    image = osr.read_region(coord, level, dim)
+
+    try:
+        buf = PILBytesIO()
+        image.save(buf, 'png')
+        resp = make_response(buf.getvalue())
+        resp.mimetype = 'image/%s' % 'png'
+    except:
+        abort(500)
+
+    return resp
+
+
 if __name__ == "__main__":
     load_slides()
+    app.debug = True
     app.run()
