@@ -59,7 +59,7 @@ class _SlideCache(object):
                 self._cache[path] = slide
         return slide
 
-
+@app.before_first_request
 def load_slides():
 
     app.basedir = os.path.abspath(SLIDE_DIR)
@@ -186,5 +186,5 @@ def annotate(path, z, x, y, w, h):
 
 if __name__ == "__main__":
     load_slides()
-    app.debug = True
+    app.debug = False
     app.run()
