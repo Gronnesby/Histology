@@ -15,11 +15,12 @@ import os
 import urllib
 import tempfile
 import slugify
+import PIL
 from io import BytesIO
 from collections import OrderedDict
 from threading import Lock
 
-from PIL import Image
+
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 from flask import Flask, render_template, url_for, abort, make_response, request
@@ -34,10 +35,9 @@ class PILBytesIO(BytesIO):
         '''Classic PIL doesn't understand io.UnsupportedOperation.'''
         raise AttributeError('Not supported')
 
-class _SlideCache(object):
-    def __init__(self, cache_size, dz_opts):
+class _Cache(object):
+    def __init__(self, cache_size):
         self.cache_size = cache_size
-        self.dz_opts = dz_opts
         self._lock = Lock()
         self._cache = OrderedDict()
 
@@ -49,8 +49,9 @@ class _SlideCache(object):
                 self._cache[path] = slide
                 return slide
 
-        osr = OpenSlide(path)
-        slide = DeepZoomGenerator(osr, **self.dz_opts)
+        with open(path, 'rb') as fp:
+            slide = fp.read()
+        
 
         with self._lock:
             if path not in self._cache:
@@ -58,6 +59,34 @@ class _SlideCache(object):
                     self._cache.popitem(last=False)
                 self._cache[path] = slide
         return slide
+
+
+class _TileCache(_Cache):
+    def __init__(self, cache_size):
+        super().__init__(cache_size)
+
+    def get(self, path):
+        with self._lock:
+            if path in self._cache:
+                # Move to end of LRU
+                tile = self._cache.pop(path)
+                self._cache[path] = tile
+                return tile
+
+        try:
+            tile = PIL.Image.open(path)
+        except PIL.UnidentifiedImageError:
+            raise
+
+        with self._lock:
+            if path not in self._cache:
+                if len(self._cache) == self.cache_size:
+                    self._cache.popitem(last=False)
+                self._cache[path] = tile
+        return tile
+
+
+
 
 @app.before_first_request
 def load_slides():
@@ -68,12 +97,13 @@ def load_slides():
         'overlap': DEEPZOOM_TILE_OVERLAP,
         'limit_bounds': DEEPZOOM_LIMIT_BOUNDS,
     }
-    app.cache = _SlideCache(SLIDE_CACHE_SIZE, opts)
+    app.slidecache = _Cache(SLIDE_CACHE_SIZE)
+    app.tilecache = _Cache(SLIDE_CACHE_SIZE)
     app.slides = []
     app.thumbnails = []
 
     for fname in os.listdir(app.basedir):
-        if fname.endswith(".vms"):
+        if fname.endswith(".dzi"):
             app.slides.append(fname)
         if fname.endswith("_thumbnail.jpg"):
             app.thumbnails.append(fname)
@@ -83,16 +113,34 @@ def _get_slide(path):
     path = os.path.abspath(os.path.join(app.basedir, path))
     if not path.startswith(app.basedir + os.path.sep):
         # Directory traversal
+        print("Path does not exist")
         abort(404)
     if not os.path.exists(path):
+        print("File does not exist")
         abort(404)
     try:
-        slide = app.cache.get(path)
-        slide.filename = os.path.basename(path)
+        slide = app.slidecache.get(path)
         return slide
     except OpenSlideError:
-        abort(404)
+        raise
+        #abort(404)
 
+def _get_tile(path, level, col, row, format):
+    tile_file = str(col) + "_" + str(row) + "." + str(format)
+    path = os.path.join(path + "_files", str(level), tile_file)
+    path = os.path.abspath(os.path.join(app.basedir, path))
+    if not path.startswith(app.basedir + os.path.sep):
+        # Directory traversal
+        print("Path does not exist")
+        abort(404)
+    if not os.path.exists(path):
+        print("File does not exist")
+        abort(404)
+    try:
+        slide = app.tilecache.get(path)
+        return slide
+    except:
+        raise
 
 @app.route('/')
 @app.route('/index')
@@ -101,34 +149,36 @@ def index():
 
 @app.route('/slide/<path:path>')
 def slide(path):
+    print(app.slides)
     slide_url = url_for('dzi', path=path)
     return render_template('slide.html', slide_url=slide_url)
 
 
 @app.route('/<path:path>.dzi')
 def dzi(path):
+    print(path)
     slide = _get_slide(path)
-    resp = make_response(slide.get_dzi(DEEPZOOM_FORMAT))
+    resp = make_response(slide)
     resp.mimetype = 'application/xml'
     return resp
 
 
-@app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<format>')
-def tile(path, level, col, row, format):
-    slide = _get_slide(path)
-    format = format.lower()
-    if format != 'jpeg' and format != 'png':
+@app.route('/<path:path>_files/<int:level>/<int:col>_<int:row>.<ext>')
+def tile(path, level, col, row, ext):
+    
+    ext = ext.lower()
+    if ext != 'jpeg' and ext != 'png':
         # Not supported by Deep Zoom
         abort(404)
     try:
-        tile = slide.get_tile(level, (col, row))
+        path = "".join([path])
+        tile = _get_tile(path, level, col, row, ext)
     except ValueError:
         # Invalid level or coordinates
         abort(404)
-    buf = PILBytesIO()
-    tile.save(buf, format, quality=DEEPZOOM_TILE_QUALITY)
-    resp = make_response(buf.getvalue())
-    resp.mimetype = 'image/%s' % format
+
+    resp = make_response(tile)
+    resp.mimetype = 'image/%s' % ext
     return resp
 
 @app.route
@@ -186,5 +236,5 @@ def annotate(path, z, x, y, w, h):
 
 if __name__ == "__main__":
     load_slides()
-    app.debug = False
+    app.debug = True
     app.run()
