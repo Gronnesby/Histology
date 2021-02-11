@@ -13,9 +13,17 @@ async function onSelectionConfirmed(viewer, rect)
     var y = Math.floor(rect.y);
     var width = Math.floor(rect.width);
     var height = Math.floor(rect.height);
-    var z = Math.floor(viewer.viewport.getZoom(true));
+    var z = viewer.world.getItemAt(0).source.maxLevel;
 
     var vp = viewer.viewport.imageToViewportRectangle(rect.x, rect.y, rect.width, rect.height);
+
+    var tiledImage = viewer.world.getItemAt(0);
+    tiledImage.setCroppingPolygons([{"x": rect.x, "y": rect.y}, 
+                                    {"x": rect.getBottomLeft().x, "y": rect.getBottomLeft().y}, 
+                                    {"x": rect.getBottomRight().x, "y": rect.getBottomRight().y}, 
+                                    {"x": rect.getTopRight().x, "y": rect.getTopRight().y},
+                                    {"x": rect.x, "y": rect.y}]);
+    viewer.forceRedraw();
 
     var elt = document.createElement("div");
     elt.id = "runtime-overlay";
@@ -27,8 +35,6 @@ async function onSelectionConfirmed(viewer, rect)
 
     var slidename = path.substring(path.lastIndexOf('/') + 1);
     var annotateURL = baseurl + `/${slidename}/${z}/${x}_${y}/${width}_${height}`;
-
-    alert(annotateURL);
 
     fetch(annotateURL)
         .then(function(response){
@@ -79,6 +85,7 @@ async function onSelectionConfirmed(viewer, rect)
                 },
                 clearBeforeRedraw: true
             });
+            viewer.forceRedraw();
         })
         .catch(function(error) {
             // If there is any error you will catch them here

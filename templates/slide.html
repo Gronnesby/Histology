@@ -2,7 +2,7 @@
 {% extends "layout.html" %}
 {% block content %}
 
-
+<script src="{{ url_for('static', filename='js/annotation.js') }}"></script>
 <div id="view" class="map" style="width: 100%; min-width:100%;"></div>
 
 
@@ -16,17 +16,7 @@ $(document).ready(function() {
         showRotationControl: false,
         animationTime: 0.5,
         blendTime: 0.1,
-        constrainDuringPan: true,
-        maxZoomPixelRatio: 2,
-        minZoomLevel: 1,
-        visibilityRatio: 1,
-        zoomPerScroll: 0.01,
         timeout: 12000,
-        gestureSettingsMouse: {
-            scrollToZoom: true,
-            clickToZoom: false,
-            dblClickToZoom: true,
-        },
     });
     viewer.addHandler("open", function() {
         // To improve load times, ignore the lowest-resolution Deep Zoom
@@ -43,6 +33,6 @@ $(document).ready(function() {
     });
 });
 </script>
-    
+
 
 {% endblock %}

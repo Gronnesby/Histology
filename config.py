@@ -2,10 +2,9 @@
 THUMBNAIL_SIZE = 500, 500
 GEOMETRIC_INFER = "geometric"
 HOOVERNET_INFER = "hoover"
-
+INFERENCE_URL = "http://hovernet-gpu.northeurope.azurecontainer.io"
 
 INFERENCE_MODULE = GEOMETRIC_INFER
-
 
 DEEPZOOM_TILE_SIZE = 254
 DEEPZOOM_TILE_OVERLAP = 1

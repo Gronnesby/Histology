@@ -57,11 +57,9 @@ function setLoc(viewer, x, y, w, h, z) {
     console.dir(viewer.viewport.getBounds());
 }
 
-function onSelectionConfirmed(rect) {
+function onSelectionConfirmed(viewer, rect) {
 
-    // var bb = rect.getBoundingBox();
-    var viewer = self.viewer;
-
+    
     //var url = new URL(window.location);
     var baseurl = window.location.protocol + '//' + window.location.host + '/annotate';
     
