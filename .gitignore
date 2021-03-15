@@ -37,3 +37,5 @@ project-description/*
 .azure/*
 hover_serving/*
 examples/*
+*.pdf
+

@@ -5,7 +5,6 @@
 <script src="{{ url_for('static', filename='js/annotation.js') }}"></script>
 <div id="view" class="map" style="width: 100%; min-width:100%;"></div>
 
-
 <script type="text/javascript">
 $(document).ready(function() {
     var viewer = new OpenSeadragon({
@@ -31,6 +30,8 @@ $(document).ready(function() {
             onSelectionConfirmed(viewer, rect)
         }
     });
+
+    viewer.overlay_list = [];
 });
 </script>
 

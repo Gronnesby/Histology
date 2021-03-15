@@ -1,6 +1,3 @@
-[submodule "heimmune"]
-	path = heimmune
-	url = https://github.com/edvardpedersen/heimmune
-[submodule "hover-serving"]
+[submodule "hover_serving"]
 	path = hover_serving
-	url = https://github.com/nsh23/hover-serving.git
+	url = git@github.com:uit-hdl/hover_serving.git

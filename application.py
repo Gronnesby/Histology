@@ -9,24 +9,28 @@
 #
 
 import os
+import sys
 import urllib
 import math
+import warnings
 
-import slugify
+warnings.filterwarnings("ignore")
+
+import numpy as np
+np.set_printoptions(threshold=sys.maxsize)
+import json
 import PIL
-import xml.etree.ElementTree as ET 
 import matplotlib.pyplot as plt
 
 from io import BytesIO
 from collections import OrderedDict
 from threading import Lock
 
-
 from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
 from openslide.deepzoom import DeepZoomGenerator
 from flask import Flask, render_template, url_for, abort, make_response, request
 
-from hover.src.external_infer_url import InfererURL, get_available_models
+from hover_serving.src.external_infer_url import InfererURL, get_available_models
 
 
 from config import *
@@ -40,29 +44,28 @@ class PILBytesIO(BytesIO):
         raise AttributeError('Not supported')
 
 class DZIFile(object):
-    def __init__(self, path, raw_xml):
+    def __init__(self, path, raw_json):
         self.path = path
         self.overlap = 0
         self.tile_size = 0
         self.height = 0
         self.width = 0
+        self.mpp = 0
         
-        self.raw_xml = raw_xml
+        self.raw_json = raw_json
 
-        self.parse_xml()
+        self.parse_json()
 
-    def parse_xml(self):
+    def parse_json(self):
 
-        root = ET.fromstring(self.raw_xml)
+        root = json.loads(self.raw_json)
+        image_meta = root["Image"]
         
-        self.overlap = int(root.attrib["Overlap"])
-        self.tile_size = int(root.attrib["TileSize"])
-        for child in root:
-            print(child)
-            if "Size" in child.tag:
-                print(child.attrib)
-                self.height = int(child.attrib["Height"])
-                self.width = int(child.attrib["Width"])
+        self.overlap = int(image_meta["Overlap"])
+        self.tile_size = int(image_meta["TileSize"])
+        self.height = int(image_meta["Size"]["Height"])
+        self.width = int(image_meta["Size"]["Width"])
+        self.mpp = float(image_meta["mpp"])
 
     def get_associated_images(self, x, y, w, h, level):
         
@@ -85,7 +88,7 @@ class DZIFile(object):
 
         return images
 
-    def get_image(self, x, y, w, h, level):
+    def get_image(self, x, y, w, h, level, downsample=True):
 
         images = self.get_associated_images(x, y, w, h, level)
 
@@ -106,7 +109,8 @@ class DZIFile(object):
         start_y = y % self.tile_size
 
         new_image = new_image.crop(box=(start_x, start_y, start_x + w, start_y + h))
-
+        if downsample:
+            new_image = new_image.resize((int(w/app.downsampling), int(h/app.downsampling)), resample=PIL.Image.LANCZOS)
         return new_image
 
 
@@ -186,6 +190,14 @@ def load_slides():
 def get_models():
 
     app.inference_models = get_available_models(INFERENCE_URL)
+    app.model = app.inference_models[0]
+
+
+@app.before_first_request
+def set_downsampling():
+
+    app.downsampling_levels = [1, 2, 4, 8]
+    app.downsampling = app.downsampling_levels[2]
 
 
 def _get_slide(path):
@@ -239,8 +251,8 @@ def slide(path):
 def dzi(path):
     print(path)
     slide = _get_slide(path)
-    resp = make_response(slide.raw_xml)
-    resp.mimetype = 'application/xml'
+    resp = make_response(slide.raw_json)
+    resp.mimetype = 'application/json'
     return resp
 
 
@@ -292,23 +304,47 @@ def annotate(path, z, x, y, w, h):
     slide = _get_slide(path)
     img = slide.get_image(x, y, w, h, z)
 
-    infer = InfererURL(img, app.inference_models[0], server_url=INFERENCE_URL, profile='hv_pannuke')
+    # if (w * h) > (4000*4000):
+    #     app.downsampling = 16
+    # elif (w * h) > (2000*2000):
+    #     app.downsampling = 8
+    # elif (w * h) > (1000*1000):
+    #     app.downsampling = 4
+    # elif (w * h) > (500*500):
+    #     app.downsampling = 2
+    # elif (w * h) > (300*300):
+    #     app.downsampling = 1
+
+    app.downsampling = 1
+    #print("Set downsampling to {0}".format(app.downsampling))
+
+    infer = InfererURL(img, app.inference_models[1], server_url=INFERENCE_URL)
     overlay = infer.run()
-    overlay = overlay[:, :, 0]
-
-    overlay = PIL.Image.fromarray(overlay, mode="P")
-    img.putalpha(img.convert(mode="L"))
-
+    overlay = overlay[:, :, 0] * 255
+    
+    im = PIL.Image.fromarray(overlay, mode="I;16").convert(mode="L")
+    #im = im.resize((w, h), resample=PIL.Image.LANCZOS)
+    
+    plt.subplot(311)
     plt.imshow(img)
-    plt.imshow(overlay, alpha=0.5)
+    
+    plt.subplot(312)
+    plt.imshow(overlay)
+
+    plt.subplot(313)
+    plt.imshow(im)
+
+    plt.show()
+
+    print(overlay)
 
     try:
         buf = PILBytesIO()
-        img.save(buf, format='jpeg')
+        im.save(buf, format='jpeg')
         resp = make_response(buf.getvalue())
         resp.mimetype = 'image/%s' % 'jpeg'
     except:
-        abort(500)
+        raise
 
     return resp
 
