@@ -5,3 +5,7 @@ It is based on the [openslide-python](https://github.com/openslide/openslide-pyt
 
 
 The viewer is available with an example image at (hdl-histology.northeurope.cloudapp.azure.com). It is possible to run the server locally using the provided Dockerfile, however, this does not include any example slides. The example slides has to be placed in the `static/images/pathology/` folder.
+
+## Slide annotation how-to
+
+The viewer features cell identification and couting through our hovernet container running on Azure.

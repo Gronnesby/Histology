@@ -54,7 +54,6 @@ async function onSelectionConfirmed(viewer, rect)
             viewer.removeOverlay(elt);
             viewer.forceRedraw();
             viewer.overlay_list.push(img);
-            alert(viewer.overlay_list);
         })
         .catch(function(error) {
             alert(error);

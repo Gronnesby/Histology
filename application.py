@@ -88,7 +88,7 @@ class DZIFile(object):
 
         return images
 
-    def get_image(self, x, y, w, h, level, downsample=True):
+    def get_image(self, x, y, w, h, level, downsample=False):
 
         images = self.get_associated_images(x, y, w, h, level)
 
@@ -302,7 +302,8 @@ def thumbnail(path):
 def annotate(path, z, x, y, w, h):
 
     slide = _get_slide(path)
-    img = slide.get_image(x, y, w, h, z)
+    app.downsampling = 1
+    img = slide.get_image(x, y, w, h, z, downsample=False)
 
     # if (w * h) > (4000*4000):
     #     app.downsampling = 16
@@ -315,34 +316,37 @@ def annotate(path, z, x, y, w, h):
     # elif (w * h) > (300*300):
     #     app.downsampling = 1
 
-    app.downsampling = 1
     #print("Set downsampling to {0}".format(app.downsampling))
 
-    infer = InfererURL(img, app.inference_models[1], server_url=INFERENCE_URL)
-    overlay = infer.run()
-    overlay = overlay[:, :, 0] * 255
-    
-    im = PIL.Image.fromarray(overlay, mode="I;16").convert(mode="L")
+    infer = InfererURL(img, app.inference_models[3], server_url=INFERENCE_URL)
+    overlay = infer.run_type()
+
+    color_values = ["F800", "07E0", "001F", "07FF", "F81F", "FFE0", "0000", "FFFF"]
+    for i, nuclei in enumerate(infer.nuclei_types.values()):
+        
+        overlay[overlay == nuclei] = int(color_values[i], 16)
+
+    print("Matrix of type: {0} with shape {1}".format(overlay.dtype,overlay.shape))
+
+    im = PIL.Image.fromarray(overlay.astype(np.uint16), mode="I;16").convert(mode="P", palette=Image.ADAPTIVE, colors=8)
     #im = im.resize((w, h), resample=PIL.Image.LANCZOS)
-    
+
     plt.subplot(311)
     plt.imshow(img)
-    
+
     plt.subplot(312)
-    plt.imshow(overlay)
+    plt.imshow(overlay.astype(np.uint16))
 
     plt.subplot(313)
     plt.imshow(im)
 
     plt.show()
 
-    print(overlay)
-
     try:
         buf = PILBytesIO()
-        im.save(buf, format='jpeg')
+        im.save(buf, format='png')
         resp = make_response(buf.getvalue())
-        resp.mimetype = 'image/%s' % 'jpeg'
+        resp.mimetype = 'image/%s' % 'png'
     except:
         raise
 
