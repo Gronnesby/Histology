@@ -305,42 +305,25 @@ def annotate(path, z, x, y, w, h):
     app.downsampling = 1
     img = slide.get_image(x, y, w, h, z, downsample=False)
 
-    # if (w * h) > (4000*4000):
-    #     app.downsampling = 16
-    # elif (w * h) > (2000*2000):
-    #     app.downsampling = 8
-    # elif (w * h) > (1000*1000):
-    #     app.downsampling = 4
-    # elif (w * h) > (500*500):
-    #     app.downsampling = 2
-    # elif (w * h) > (300*300):
-    #     app.downsampling = 1
-
-    #print("Set downsampling to {0}".format(app.downsampling))
-
     infer = InfererURL(img, app.inference_models[3], server_url=INFERENCE_URL)
-    overlay = infer.run_type()
+    pred = infer.run_type()
+    overlay = np.zeros((pred.shape[0], pred.shape[1], 4), dtype=np.uint8)
+    
+    app.palette = [(0,0,0), (255,0,0), (0,0,255), (0,255,0), (255,0,255), (255,255,0), (0,255,255)]
 
-    color_values = ["F800", "07E0", "001F", "07FF", "F81F", "FFE0", "0000", "FFFF"]
-    for i, nuclei in enumerate(infer.nuclei_types.values()):
-        
-        overlay[overlay == nuclei] = int(color_values[i], 16)
+    for i in range(overlay.shape[0]):
+        for j in range(overlay.shape[1]):
 
-    print("Matrix of type: {0} with shape {1}".format(overlay.dtype,overlay.shape))
+            color = list(app.palette[pred[i,j,0]%len(app.palette)])
 
-    im = PIL.Image.fromarray(overlay.astype(np.uint16), mode="I;16").convert(mode="P", palette=Image.ADAPTIVE, colors=8)
-    #im = im.resize((w, h), resample=PIL.Image.LANCZOS)
+            if pred[i,j,0] == 0:
+                color.append(0)
+            else:
+                color.append(180)
 
-    plt.subplot(311)
-    plt.imshow(img)
+            overlay[i, j] = color
 
-    plt.subplot(312)
-    plt.imshow(overlay.astype(np.uint16))
-
-    plt.subplot(313)
-    plt.imshow(im)
-
-    plt.show()
+    im = PIL.Image.fromarray(overlay, mode="RGBA")
 
     try:
         buf = PILBytesIO()
