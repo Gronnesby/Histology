@@ -8,9 +8,7 @@ RUN git clone --single-branch --branch azure https://github.com/gronnesby/histol
 
 WORKDIR /histology
 
-RUN git submodule add https://github.com/uit-hdl/hover_serving.git
-RUN git submodule init
-RUN git submodule update
+RUN git submodule update --init --recursive
 
 
 # Setuptools version > 45 fails with an import error
