@@ -188,7 +188,7 @@ def load_slides():
 
 @app.before_first_request
 def get_models():
-
+    
     app.inference_models = get_available_models(INFERENCE_URL)
     app.model = app.inference_models[0]
 
