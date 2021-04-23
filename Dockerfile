@@ -1,7 +1,7 @@
 # Use an official Python runtime as a parent image
 FROM python:3.8.3-slim-buster
 
-RUN apt-get update && apt-get install -y libopenslide-dev git gcc
+RUN apt-get update && apt-get install -y libopenslide-dev git gcc python3-opencv ffmpeg libsm6 libxext6
 
 # Clone the histology application repository, make sure to pull the correct branch for deployment
 RUN git clone --single-branch --branch azure https://github.com/gronnesby/histology
