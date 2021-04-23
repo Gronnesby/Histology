@@ -5,10 +5,13 @@ RUN apt-get update && apt-get install -y libopenslide-dev git gcc
 
 # Clone the histology application repository, make sure to pull the correct branch for deployment
 RUN git clone --single-branch --branch azure https://github.com/gronnesby/histology
+
+WORKDIR /histology
+
 RUN git submodule add https://github.com/uit-hdl/hover_serving.git
 RUN git submodule init
 RUN git submodule update
-WORKDIR /histology
+
 
 # Setuptools version > 45 fails with an import error
 RUN python3 -m pip install --upgrade setuptools==45
