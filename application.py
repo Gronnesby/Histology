@@ -26,8 +26,7 @@ from io import BytesIO
 from collections import OrderedDict
 from threading import Lock
 
-from openslide import OpenSlide, OpenSlideUnsupportedFormatError, OpenSlideError
-from openslide.deepzoom import DeepZoomGenerator
+
 from flask import Flask, render_template, url_for, abort, make_response, request
 
 from hover_serving.src.external_infer_url import InfererURL, get_available_models
@@ -189,8 +188,11 @@ def load_slides():
 @app.before_first_request
 def get_models():
 
-    app.inference_models = get_available_models(INFERENCE_URL)
-    app.model = app.inference_models[0]
+    # try:
+    #     app.inference_models = get_available_models(INFERENCE_URL)
+    #     app.model = app.inference_models[0]
+    # except ConnectionError:
+    app.model = "pannuke_original"
 
 
 @app.before_first_request
@@ -212,7 +214,7 @@ def _get_slide(path):
     try:
         slide = app.slidecache.get(path)
         return slide
-    except OpenSlideError:
+    except e:
         raise
         #abort(404)
 
@@ -278,6 +280,7 @@ def tile(path, level, col, row, ext):
 @app.route('/thumbnail/<path:path>')
 def thumbnail(path):
 
+    print(path)
     try:
         imgfile = os.path.splitext(path)[0]
         thumbnail = imgfile + "_thumbnail.jpg"
@@ -318,7 +321,7 @@ def annotate(path, z, x, y, w, h):
 
     #print("Set downsampling to {0}".format(app.downsampling))
 
-    infer = InfererURL(img, app.inference_models[3], server_url=INFERENCE_URL)
+    infer = InfererURL(img, app.model, server_url=INFERENCE_URL)
     overlay = infer.run_type()
 
     color_values = ["F800", "07E0", "001F", "07FF", "F81F", "FFE0", "0000", "FFFF"]

@@ -13,9 +13,6 @@
     <link href="http://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='favicon.ico')}}" rel="icon" />
     <link href="{{ url_for('static', filename='css/style.css')}}" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/easy-button.css')}}" rel="stylesheet" />
-    <link href="{{ url_for('static', filename='css/one-page-wonder.css')}}" rel="stylesheet" />
-
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -23,39 +20,38 @@
     <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/openseadragonselection.min.js') }}"></script>
     
-    <script>
-        $(document).ready(function () {
-            $('.dropdown-toggle').dropdown();
-        });
-    </script>
+    <style>
+        #logo {
+            vertical-align:middle;
+        }
+        .navbar-brand span {
+            font-size:2rem;
+            line-height:1.2;
+            font-weight: 200;
+            display:inline-block;
+            vertical-align:middle;
+            padding:0 0 0 15px;
+        }
+        .navbar-brand b {
+            display:block;
+            font-size:50%;
+            line-height:1;
+        }
+        .navbar-nav {
+            margin-left:auto;
+        }
+    </style>
 
 </head>
 <body>
     
-    <div class="navbar">
-        <nav class="navbar navbar-light bg-light">
-            
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <a class="navbar-brand" href="/">
-                    <img src="/static/images/logo.png" />
-                </a>
-            </div>
-    
-            <ul class="nav navbar-nav">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Slides<span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        {% for img in images %}
-                            <li><a href="/image?slug={{ img }}">{{ img }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-    </div>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="height: 50px;">    
+            <a class="navbar-brand" href="/">
+                <img id="logo" class="logo" src="/static/favicon.ico" alt="Logo"/>
+            </a>
+    </nav>
 
-    <div style="padding-top: 55px; height:100%">
+    <div style="padding-top: 50px; height:100%">
         {% block content %}{% endblock %}
     </div>
     
