@@ -4,11 +4,35 @@
 {% extends "layout.html" %}
 {% block content %}
 
-    <h1></h1>
+    <div style="margin-left: 20px;">
+    <h1>Slide viewer and annotation tool</h1>
+    <h3>What is the viewer?</h3>
     <p>
+        This is a demonstration of our slide viewer and annotation tool.
+        It is used to veiw WSI (whole slide images) and is based on <a href="https://github.com/openseadragon/openseadragon"> OpenSeadragon.</a>
         
     </p>
-    <div class="row" style="width: 100%;">
+    <p>
+        <h3>What is the annotation?</h3>
+        You can annotate different cells in a region of the slide.
+        Within the viewer there is a selection option that let the user mark a region that will be annotated.
+        The annotation is based on our HoverNet based model. (<a href="">Paper</a>)
+    </p>
+    <p>
+        <h3>What are the limitations</h3>
+        The viewer is running on Azure, and since storage is fairly expensive, there is only 1 slide available.
+        The annotation tool takes a fair amount of time based on the image size. Any image larger than 1000 pixels will takes minutes to process.
+    </p>
+    <p>
+        <h3>How to use?</h3>
+        Pressing the selection button: <img src="static/images/selection_rest.png" /> will enable you to mark a region of the slide.
+
+        
+        
+
+    </p>
+    </div>
+    <div class="row" style="width: 100%; margin-left:5px">
     {% for img in files %}
         <div class="col-lg-8">
             <div class="thumbnail" style="height: 20%; width: 50%">

@@ -312,16 +312,14 @@ def annotate(path, z, x, y, w, h):
     pred = infer.run_type()
     overlay = np.zeros((pred.shape[0], pred.shape[1], 4), dtype=np.uint8)
     
-    app.palette = [(0,0,0), (255,0,0), (0,0,255), (0,255,0), (255,0,255), (255,255,0), (0,255,255)]
 
     for i in range(overlay.shape[0]):
         for j in range(overlay.shape[1]):
 
-            color = list(app.palette[pred[i,j,0]%len(app.palette)])
-
             if pred[i,j,0] == 0:
-                color.append(0)
+                color = [0,0,0,0]
             else:
+                color = list(infer.color_mapping[pred[i,j,0]])
                 color.append(180)
 
             overlay[i, j] = color
@@ -339,7 +337,8 @@ def annotate(path, z, x, y, w, h):
     return resp
 
 
+
 if __name__ == "__main__":
     load_slides()
-    app.debug = False
+    app.debug = True
     app.run()
