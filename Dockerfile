@@ -16,7 +16,7 @@ RUN python3 -m pip install --upgrade setuptools==45
 # Install any needed packages specified in requirements.txt
 RUN python3 -m pip install --trusted-host pypi.python.org -r requirements.txt
 
-EXPOSE 80
+EXPOSE 5000
 
 # Run application.py when the container launches
-CMD ["gunicorn", "-w", "12", "--timeout", "600", "--bind", "0.0.0.0:80", "wsgi:app"]
+CMD ["gunicorn", "-w", "12", "--timeout", "600", "--bind", "0.0.0.0:5000", "wsgi:app"]
