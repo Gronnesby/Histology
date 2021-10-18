@@ -318,7 +318,6 @@ def annotate(path, z, x, y, w, h, model):
     
     app.cell_types = {v:k for k, v in infer.nuclei_types.items()}
     
-
     for i in range(overlay.shape[0]):
         for j in range(overlay.shape[1]):
 

@@ -40,15 +40,15 @@ async function annotateArea(viewer, rect)
 
             var overlayDiv = document.createElement('div');
             overlayDiv.id = "div-overlay";
-            overlayDiv.className = "overlay";
+            overlayDiv.className = "div-overlay";
             
             var img = document.createElement('img');
             img.id = "img-overlay";
             img.src = objectURL;
-            overlayDiv.appendChild(img)
+            overlayDiv.appendChild(img);
 
             viewer.addOverlay({
-                element: img,
+                element: overlayDiv,
                 location: new OpenSeadragon.Rect(vp.x, vp.y, vp.width, vp.height),
                 checkResize: false
             });
