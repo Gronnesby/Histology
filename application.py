@@ -161,47 +161,6 @@ class _TileCache(_Cache):
         return tile
 
 
-
-
-@app.before_first_request
-def load_slides():
-
-    app.basedir = os.path.abspath(SLIDE_DIR)
-    opts = {
-        'tile_size': DEEPZOOM_TILE_SIZE,
-        'overlap': DEEPZOOM_TILE_OVERLAP,
-        'limit_bounds': DEEPZOOM_LIMIT_BOUNDS,
-    }
-    app.slidecache = _Cache(SLIDE_CACHE_SIZE)
-    app.tilecache = _TileCache(SLIDE_CACHE_SIZE)
-    app.slides = []
-    app.tiffs = {}
-    app.thumbnails = []
-
-    for fname in os.listdir(app.basedir):
-        if fname.endswith(".dzi"):
-            app.slides.append(fname)
-        if fname.endswith("_thumbnail.jpg"):
-            app.thumbnails.append(fname)
-
-
-@app.before_first_request
-def get_models():
-
-    # try:
-    #     app.inference_models = get_available_models(INFERENCE_URL)
-    #     app.model = app.inference_models[0]
-    # except ConnectionError:
-    app.model = "pannuke_original"
-
-
-@app.before_first_request
-def set_downsampling():
-
-    app.downsampling_levels = [1, 2, 4, 8]
-    app.downsampling = app.downsampling_levels[2]
-
-
 def _get_slide(path):
     path = os.path.abspath(os.path.join(app.basedir, path))
     if not path.startswith(app.basedir + os.path.sep):
@@ -236,22 +195,63 @@ def _get_tile(path, level, col, row, format):
         raise
 
 
+@app.before_first_request
+def load_slides():
+
+    app.basedir = os.path.abspath(SLIDE_DIR)
+    opts = {
+        'tile_size': DEEPZOOM_TILE_SIZE,
+        'overlap': DEEPZOOM_TILE_OVERLAP,
+        'limit_bounds': DEEPZOOM_LIMIT_BOUNDS,
+    }
+    app.slidecache = _Cache(SLIDE_CACHE_SIZE)
+    app.tilecache = _TileCache(SLIDE_CACHE_SIZE)
+    app.slides = []
+    app.tiffs = {}
+    app.thumbnails = []
+
+    for fname in os.listdir(app.basedir):
+        if fname.endswith(".dzi"):
+            app.slides.append(fname)
+        if fname.endswith("_thumbnail.jpg"):
+            app.thumbnails.append(fname)
+
+
+@app.before_first_request
+def get_models():
+
+    try:
+        app.inference_models = get_available_models(INFERENCE_URL)
+        app.model = app.inference_models[0]
+    except Exception as e:
+        print(f"Got exception {e}")
+        print(f"Setting model to pannuke_original")
+        app.model = "pannuke_original"
+        app.inference_models = [app.model]
+
+
+@app.before_first_request
+def set_downsampling():
+
+    app.downsampling_levels = [1, 2, 4, 8]
+    app.downsampling = app.downsampling_levels[2]
+
 
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template("index.html", title="Home", files=app.slides)
+    return render_template("index.html", title="Home", files=app.slides, models=app.inference_models)
 
 @app.route('/slide/<path:path>')
 def slide(path):
     print(app.slides)
     slide_url = url_for('dzi', path=path)
-    return render_template('slide.html', slide_url=slide_url)
+    return render_template('slide.html', slide_url=slide_url, models=app.inference_models)
 
 
 @app.route('/<path:path>.dzi')
 def dzi(path):
-    print(path)
+
     slide = _get_slide(path)
     resp = make_response(slide.raw_json)
     resp.mimetype = 'application/json'
@@ -276,7 +276,7 @@ def tile(path, level, col, row, ext):
     resp.mimetype = 'image/%s' % ext
     return resp
 
-@app.route
+
 @app.route('/thumbnail/<path:path>')
 def thumbnail(path):
 
@@ -301,16 +301,22 @@ def thumbnail(path):
 
 
 
-@app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>')
-def annotate(path, z, x, y, w, h):
+@app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>', defaults={"model": None})
+@app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>/<string:model>')
+def annotate(path, z, x, y, w, h, model):
+
+    if model is not None and model in app.inference_models:
+        app.model = model
 
     slide = _get_slide(path)
     app.downsampling = 1
     img = slide.get_image(x, y, w, h, z, downsample=False)
 
     infer = InfererURL(img, app.model, server_url=INFERENCE_URL)
-    pred = infer.run_type()
+    pred, counts = infer.run_type()
     overlay = np.zeros((pred.shape[0], pred.shape[1], 4), dtype=np.uint8)
+    
+    app.cell_types = {v:k for k, v in infer.nuclei_types.items()}
     
 
     for i in range(overlay.shape[0]):
@@ -337,8 +343,19 @@ def annotate(path, z, x, y, w, h):
     return resp
 
 
+@app.route('/models')
+def models():
+
+    try:
+        resp = make_response(json.dumps(app.inference_models))
+        resp.mimetype = 'application/json'
+    except:
+        raise
+
+    return resp
+
 
 if __name__ == "__main__":
     load_slides()
-    app.debug = False
+    app.debug = True
     app.run()

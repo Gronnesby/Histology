@@ -19,6 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.4.2/openseadragon.min.js"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
     <script src="{{ url_for('static', filename='js/openseadragonselection.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/openseadragon-html-overlay.js') }}"></script>
     
     <style>
         #logo {
@@ -45,15 +46,21 @@
 </head>
 <body>
     
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark" style="height: 50px;">    
-            <a class="navbar-brand" href="/">
-                <img id="logo" class="logo" src="/static/favicon.ico" alt="Logo"/>
-            </a>
-    </nav>
+    <div class="navbar navbar-expand-md navbar-dark bg-dark" style="height: 50px;">    
+        <a class="navbar-brand" href="/">
+            <img id="logo" class="logo" src="/static/favicon.ico" alt="Logo"/>
+        </a>
+        
+        <select id="model-selection" class="form-control" data-role="select-dropdown" style="margin-left: 40px; height: 40px; width: 20%;">
+            {% for model in models %}
+                <option value="{{ model }}" selected>{{ model }}</option>"
+            {% endfor %}
+        </select>
+        
+    </div>
 
     <div style="padding-top: 50px; height:100%">
         {% block content %}{% endblock %}
     </div>
-    
 </body>
 </html>
