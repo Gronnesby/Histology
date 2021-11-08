@@ -45,7 +45,6 @@ async function annotateArea(viewer, rect)
             overlayDiv.id = "div-overlay";
             overlayDiv.className = "div-overlay";
             
-            
             var img = document.createElement('img');
             img.id = "img-overlay";
             img.src = objectURL;

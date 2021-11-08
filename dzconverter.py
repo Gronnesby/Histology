@@ -40,11 +40,24 @@ def _dzconvert_aperio(filename, outname):
     os.rename(dzfname + "_files", dzfname + ".dzi" + "_files")
 
 
+def _dzconvert_mirax(filename, outname):
+
+    try:
+        img = vips.Image.new_from_file(filename)
+    except:
+        print("Could not open file {0}".format(filename))
+        raise
+
+
 def dzconvert(filename, outname):
 
 
     if filename.endswith('.svs'):
         _dzconvert_aperio(filename, outname)
+
+    if filename.endswith('.mrxs'):
+        _dzconvert_mirax(filename, outname)
+
 
 
 if __name__ == "__main__":
