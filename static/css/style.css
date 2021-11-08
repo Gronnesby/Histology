@@ -373,6 +373,15 @@ html { height: 100%;}
 /*            Overlay            */
 /*-------------------------------*/
 
+.div-overlay {
+    position: fixed;
+}
+
+.div-overlay > img {
+  position: inherit;
+}
+
+
 .overlay {
     position: fixed;
     display: none;
