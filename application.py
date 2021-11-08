@@ -342,8 +342,8 @@ def annotate(path, z, x, y, w, h, model):
     return resp
 
 
-@app.route('/models')
-def models():
+@app.route('/modelinfo/<string:name>')
+def models(name):
 
     try:
         resp = make_response(json.dumps(app.inference_models))
