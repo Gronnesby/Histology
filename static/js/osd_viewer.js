@@ -31,17 +31,7 @@ function osd_init(tilesource, prefixUrl) {
     });
 
     viewer.overlay_list = [];
-    viewer.models_list = [];
 
-    var modelsUrl = window.location.protocol + '//' + window.location.host + '/models';
-
-    fetch(modelsUrl)
-        .then(function(response){
-            alert(response.json());
-        })
-        .catch(function(error) {
-            alert(error);
-        });
 }
 
 

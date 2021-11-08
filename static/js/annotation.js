@@ -28,7 +28,10 @@ async function annotateArea(viewer, rect)
     
     viewer.forceRedraw();
     var slidename = path.substring(path.lastIndexOf('/') + 1);
-    var annotateURL = baseurl + `/${slidename}/${z}/${x}_${y}/${width}_${height}`;
+
+    model_selector = document.getElementById("model-selection")
+    model = model_selector.options[model_selector.selectedIndex].text
+    var annotateURL = baseurl + `/${slidename}/${z}/${x}_${y}/${width}_${height}/${model}`;
 
     fetch(annotateURL)
         .then(function(response){
