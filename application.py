@@ -367,7 +367,6 @@ def overlay(img, id):
             img = obj["img"]
             resp = make_response(img.getvalue())
             resp.mimetype = 'image/png'
-            app.annotations[id]["img"] = None
         else:
             abort(404)
     elif "false" in img:
@@ -375,14 +374,10 @@ def overlay(img, id):
             meta = obj["meta"]
             resp = make_response(json.dumps(meta))
             resp.mimetype = 'application/json'
-            app.annotations[id]["meta"] = None
         else:
             abort(404)
     else:
         abort(404)
-
-    if app.annotations[id]["img"] is None and app.annotations[id]["meta"] is None:
-        del app.annotations[id]
 
     return resp
 
