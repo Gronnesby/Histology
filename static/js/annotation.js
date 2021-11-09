@@ -36,7 +36,6 @@ async function annotateArea(viewer, rect)
     const r = fetch(annotateURL)
         .then((response) => response.text())
         .then((resp) =>{
-            alert(resp);
             return resp;
         });
     
@@ -50,7 +49,7 @@ async function annotateArea(viewer, rect)
         });
 
     var meta = await m;
-
+    
     var imageURL = baseurl + `/overlay/true/${id}`
     
     fetch(imageURL)
@@ -72,12 +71,12 @@ async function annotateArea(viewer, rect)
             var ul = document.createElement('ul');
             for (let k in meta) {
                 var li = document.createElement('li');
-                li.innerHTML = k + " : " + meta[k];
-                li.style.color = 'white';
+                li.innerHTML = k + " : " + meta[k][0];
+                li.style.color = `rgb(${meta[k][1][0]}, ${meta[k][1][1]}, ${meta[k][1][2]})`;
                 ul.appendChild(li);
             }
-            
-            ul.style.width = "100%";
+
+            ul.style.width = "max-content";
             infoText.appendChild(ul);
 
             var img = document.createElement('img');

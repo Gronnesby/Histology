@@ -377,7 +377,7 @@ html { height: 100%;}
 
 .div-overlay {
     position: fixed;
-    border: 3px dashed green
+    border: 3px dashed yellow
 }
 
 .div-overlay > img {
@@ -390,7 +390,7 @@ html { height: 100%;}
   width: fit-content;
   height: fit-content;
   background-color: darkslategrey;
-  opacity: 0.7;
+  opacity: 0.85;
   font-size: large;
   color: white;
 }
@@ -422,7 +422,7 @@ html { height: 100%;}
 }
 .highlight:hover, .highlight:focus{
     filter:     alpha(opacity=10);
-    opacity:    0.7;
+    opacity:    0.8;
     background-color: transparent;
 }
 

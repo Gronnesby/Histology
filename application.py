@@ -338,7 +338,7 @@ def annotate(path, z, x, y, w, h, model):
 
         buf = PILBytesIO()
         im.save(buf, format='png')
-        app.annotations[id] = {"img": buf, "meta": {k: int(v) for k, v in counts.items()}}
+        app.annotations[id] = {"img": buf, "meta": {k: [int(v), infer.colors[k]] for k, v in counts.items()}}
 
         resp = make_response(str(id))
         resp.mimetype = 'text/plain'
@@ -401,5 +401,5 @@ def models(name):
 
 if __name__ == "__main__":
     load_slides()
-    app.debug = False
+    app.debug = True
     app.run()
