@@ -13,6 +13,7 @@ import sys
 import urllib
 import math
 import warnings
+import uuid
 
 warnings.filterwarnings("ignore")
 
@@ -216,6 +217,7 @@ def load_slides():
         if fname.endswith("_thumbnail.jpg"):
             app.thumbnails.append(fname)
 
+    app.annotations = {}
 
 @app.before_first_request
 def get_models():
@@ -332,12 +334,55 @@ def annotate(path, z, x, y, w, h, model):
     im = PIL.Image.fromarray(overlay, mode="RGBA")
 
     try:
+        id = str(uuid.uuid1())
+
         buf = PILBytesIO()
         im.save(buf, format='png')
-        resp = make_response(buf.getvalue())
-        resp.mimetype = 'image/%s' % 'png'
+        app.annotations[id] = {"img": buf, "meta": {k: int(v) for k, v in counts.items()}}
+
+        resp = make_response(str(id))
+        resp.mimetype = 'text/plain'
+
     except:
         raise
+
+    return resp
+
+
+@app.route('/overlay/<string:img>/<string:id>')
+def overlay(img, id):
+
+    print(img)
+    print(id)
+
+    if id is None:
+        abort(404)
+    elif id not in app.annotations:
+        abort(404)
+
+    obj = app.annotations[id]
+
+    if "true" in img:
+        if obj["img"] is not None:
+            img = obj["img"]
+            resp = make_response(img.getvalue())
+            resp.mimetype = 'image/png'
+            app.annotations[id]["img"] = None
+        else:
+            abort(404)
+    elif "false" in img:
+        if obj["meta"] is not None:
+            meta = obj["meta"]
+            resp = make_response(json.dumps(meta))
+            resp.mimetype = 'application/json'
+            app.annotations[id]["meta"] = None
+        else:
+            abort(404)
+    else:
+        abort(404)
+
+    if app.annotations[id]["img"] is None and app.annotations[id]["meta"] is None:
+        del app.annotations[id]
 
     return resp
 
