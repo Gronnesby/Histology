@@ -29,7 +29,7 @@
     <div class="row" style="width: 100%; margin-left:5px">
     {% for img in files %}
         <div class="col-lg-8">
-            <div class="thumbnail" style="height: 20%; width: 50%">
+            <div class="thumbnail" style="height: 15%; width: 50%">
                 <a href="/slide/{{ img }}">
                     <img class="card-img-top" src="/thumbnail/{{ img }}" style="width:100%; height:inherit;" >
                     <div class="caption">
@@ -41,6 +41,11 @@
     {% endfor %}
     </div>
 
-    {% include 'cellinfo.html' %}
+    <div style="margin-left: 20px;">
+    <p>
+        <h3>Available models</h3>
+        {% include 'cellinfo.html' %}
+    </p>
+    </div>
 
 {% endblock %}

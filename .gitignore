@@ -24,8 +24,7 @@ _testmain.go
 *.prof
 *.pyc
 
-#static/*
-static/model/*
+
 static/images/
 static/images/pathology/*
 project-description/*
@@ -35,7 +34,6 @@ project-description/*
 .dockerignore
 *.mat
 .azure/*
-hover_serving/*
 examples/*
 *.pdf
 
