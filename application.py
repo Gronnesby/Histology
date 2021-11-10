@@ -10,25 +10,22 @@
 
 import os
 import sys
-import urllib
-import math
 import warnings
 import uuid
+import base64
 
 warnings.filterwarnings("ignore")
 
 import numpy as np
-np.set_printoptions(threshold=sys.maxsize)
 import json
 import PIL
-import matplotlib.pyplot as plt
 
 from io import BytesIO
 from collections import OrderedDict
 from threading import Lock
 
 
-from flask import Flask, render_template, url_for, abort, make_response, request
+from flask import Flask, render_template, url_for, abort, make_response, jsonify
 
 from hover_serving.src.external_infer_url import InfererURL, get_available_models
 
@@ -303,6 +300,14 @@ def thumbnail(path):
 
 
 
+
+def base64_encode_image(imgbytes):
+
+    encoded_image = base64.encodebytes(imgbytes.getvalue()).decode('ascii')
+    encoded_image = 'data:image/png;base64,' + encoded_image
+    return encoded_image
+
+
 @app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>', defaults={"model": None})
 @app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>/<string:model>')
 def annotate(path, z, x, y, w, h, model):
@@ -334,46 +339,18 @@ def annotate(path, z, x, y, w, h, model):
     im = PIL.Image.fromarray(overlay, mode="RGBA")
 
     try:
-        id = str(uuid.uuid1())
 
         buf = PILBytesIO()
         im.save(buf, format='png')
-        app.annotations[id] = {"img": buf, "meta": {k: [int(v), infer.colors[k]] for k, v in counts.items()}}
+        encoded_img = base64_encode_image(buf)
 
-        resp = make_response(str(id))
-        resp.mimetype = 'text/plain'
+        resp_data = {"img": encoded_img, "meta": {k: [int(v), infer.colors[k]] for k, v in counts.items()}}
+
+        resp = make_response(json.dumps(resp_data))
+        resp.mimetype = 'application/json'
 
     except:
         raise
-
-    return resp
-
-
-@app.route('/overlay/<string:img>/<string:id>')
-def overlay(img, id):
-
-    if id is None or id not in app.annotations:
-        abort(404)
-
-    obj = app.annotations[id]
-
-    if "true" in img:
-        if obj["img"] is not None:
-            img = obj["img"]
-            resp = make_response(img.getvalue())
-            resp.mimetype = 'image/png'
-        else:
-            raise FileNotFoundError
-
-    elif "false" in img:
-        if obj["meta"] is not None:
-            meta = obj["meta"]
-            resp = make_response(json.dumps(meta))
-            resp.mimetype = 'application/json'
-        else:
-            raise KeyError
-    else:
-        raise LookupError
 
     return resp
 
@@ -392,5 +369,5 @@ def models(name):
 
 if __name__ == "__main__":
     load_slides()
-    app.debug = False
+    app.debug = True
     app.run()

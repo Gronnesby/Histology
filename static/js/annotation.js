@@ -29,45 +29,26 @@ async function annotateArea(viewer, rect)
     viewer.forceRedraw();
     var slidename = path.substring(path.lastIndexOf('/') + 1);
 
-    model_selector = document.getElementById("model-selection")
-    model = model_selector.options[model_selector.selectedIndex].text
+    model_selector = document.getElementById("model-selection");
+    model = model_selector.options[model_selector.selectedIndex].text;
     var annotateURL = baseurl + '/annotate' + `/${slidename}/${z}/${x}_${y}/${width}_${height}/${model}`;
-
-    const r = fetch(annotateURL)
-        .then((response) => response.text())
-        .then((resp) =>{
-            return resp;
-        });
     
-    var id = await r;
-    var metaURL = baseurl + `/overlay/false/${id}`
-
-    const m = fetch(metaURL)
+    fetch(annotateURL)
         .then((response) => response.json())
-        .then((resp) =>{
-            return resp
-        });
+        .then(function(data) {
 
-    var meta = await m;
-    
-    var imageURL = baseurl + `/overlay/true/${id}`
-    
-    fetch(imageURL)
-        .then(function(response){
-            return response.blob();
-        })
-        .then(function(blob){
-
-            const objectURL = URL.createObjectURL(blob);
-            
+            // Create a div to contain the overlay
             var overlayDiv = document.createElement('div');
             overlayDiv.id = "div-overlay";
             overlayDiv.className = "div-overlay";
 
+            // Info box with colored cell counts
             var infoText = document.createElement('div');
             infoText.id = "div-infobox"
             infoText.className = "div-infobox";
 
+            // Populate the info box
+            meta = data["meta"];
             var ul = document.createElement('ul');
             for (let k in meta) {
                 var li = document.createElement('li');
@@ -79,14 +60,16 @@ async function annotateArea(viewer, rect)
             ul.style.width = "max-content";
             infoText.appendChild(ul);
 
-            var img = document.createElement('img');
+            // Create the overlay image
+            var img = new Image();
             img.id = "img-overlay";
-            img.src = objectURL;
+            img.src = data["img"];
 
-
+            // Append the elements to the overlay div
             overlayDiv.appendChild(img);
             overlayDiv.appendChild(infoText);
 
+            // Set up handlers for hovering
             overlayDiv.onmouseenter = function(){
                 infoText.style.visibility = 'visible';
             };
