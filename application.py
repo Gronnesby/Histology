@@ -352,12 +352,7 @@ def annotate(path, z, x, y, w, h, model):
 @app.route('/overlay/<string:img>/<string:id>')
 def overlay(img, id):
 
-    print(img)
-    print(id)
-
-    if id is None:
-        abort(404)
-    elif id not in app.annotations:
+    if id is None or id not in app.annotations:
         abort(404)
 
     obj = app.annotations[id]
@@ -368,16 +363,17 @@ def overlay(img, id):
             resp = make_response(img.getvalue())
             resp.mimetype = 'image/png'
         else:
-            abort(404)
+            raise FileNotFoundError
+
     elif "false" in img:
         if obj["meta"] is not None:
             meta = obj["meta"]
             resp = make_response(json.dumps(meta))
             resp.mimetype = 'application/json'
         else:
-            abort(404)
+            raise KeyError
     else:
-        abort(404)
+        raise LookupError
 
     return resp
 
