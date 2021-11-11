@@ -369,5 +369,5 @@ def models(name):
 
 if __name__ == "__main__":
     load_slides()
-    app.debug = True
+    app.debug = False
     app.run()
