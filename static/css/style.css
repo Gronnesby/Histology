@@ -389,8 +389,8 @@ html { height: 100%;}
   visibility: hidden;
   width: fit-content;
   height: fit-content;
-  background-color: darkslategrey;
-  opacity: 0.85;
+  background-color: rgb(36, 109, 109);
+  opacity: 1.0;
   font-size: large;
   color: white;
 }

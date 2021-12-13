@@ -1,7 +1,7 @@
 
 var tiles;
 var viewer;
-
+var selection;
 
 function osd_init(tilesource, prefixUrl) {
     viewer = new OpenSeadragon({
@@ -23,10 +23,10 @@ function osd_init(tilesource, prefixUrl) {
         viewer.source.minLevel = 8;
     });
 
-    viewer.selection({
+    selection = viewer.selection({
         allowRotation: false,
         onSelection: function(rect) {
-            annotateArea(viewer, rect)
+            annotateArea(selection, rect)
         }
     });
 

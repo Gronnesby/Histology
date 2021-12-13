@@ -2,9 +2,10 @@
 
 
 
-async function annotateArea(viewer, rect)
+async function annotateArea(selection, rect)
 {
 
+    var viewer = selection.viewer;
     var path = window.location.pathname;
     var baseurl = window.location.protocol + '//' + window.location.host;
 
@@ -27,6 +28,9 @@ async function annotateArea(viewer, rect)
     });
     
     viewer.forceRedraw();
+
+
+    selection.disable();
     var slidename = path.substring(path.lastIndexOf('/') + 1);
 
     model_selector = document.getElementById("model-selection");
