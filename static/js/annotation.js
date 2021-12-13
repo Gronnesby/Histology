@@ -17,7 +17,15 @@ async function annotateArea(selection, rect)
 
     var vp = viewer.viewport.imageToViewportRectangle(rect.x, rect.y, rect.width, rect.height);
 
-    var tiledImage = viewer.world.getItemAt(0);
+    if (((rect.width * rect.height) > 250000) && ((rect.width * rect.height) < 1960000)) {
+        let largeImage = confirm("Selection exceeds the recommended size of 1000x1000 pixels.\n This may take several minutes to complete, continue?");
+        if (!largeImage) {
+            return;
+        }
+    } else if ((rect.width * rect.height) > 1960000) {
+        alert("Selection is too large\n");
+        return;
+    }
     
     var elt = document.createElement("div");
     elt.id = "runtime-placeholder";
