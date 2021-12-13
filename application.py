@@ -312,6 +312,9 @@ def base64_encode_image(imgbytes):
 @app.route('/annotate/<path:path>/<int:z>/<int:x>_<int:y>/<int:w>_<int:h>/<string:model>')
 def annotate(path, z, x, y, w, h, model):
 
+    if w*h > MAX_INFERENCE_SIZE:
+        abort(403)
+
     if model is not None and model in app.inference_models:
         app.model = model
 
